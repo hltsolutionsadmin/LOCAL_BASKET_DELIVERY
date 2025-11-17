@@ -14,6 +14,7 @@ import 'package:localbasket_delivery_partner/presentation/cubit/authentication/d
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_state.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/authentication/login_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/profile/logout.dart';
+import 'package:localbasket_delivery_partner/presentation/screens/reports/reports_screen.dart';
 
 class DeliveryPartnerProfileScreen extends StatefulWidget {
   const DeliveryPartnerProfileScreen({super.key});
@@ -74,8 +75,9 @@ class _DeliveryPartnerProfileScreenState
                       final user = state.currentCustomerModel;
 
                       String getInitials(String? fullName) {
-                        if (fullName == null || fullName.trim().isEmpty)
+                        if (fullName == null || fullName.trim().isEmpty) {
                           return 'NA';
+                        }
                         final parts = fullName.trim().split(' ');
                         if (parts.length == 1) return parts[0][0].toUpperCase();
                         return (parts[0][0] + parts.last[0]).toUpperCase();
@@ -174,6 +176,19 @@ class _DeliveryPartnerProfileScreenState
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
+                    _optionTile(
+                      title: "Reports",
+                      icon: Icons.assessment_outlined,
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ReportsScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     _optionTile(
                       title: "Logout",
                       icon: Icons.logout,

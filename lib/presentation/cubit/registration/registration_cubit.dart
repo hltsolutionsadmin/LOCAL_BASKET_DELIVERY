@@ -5,8 +5,7 @@ import 'registration_state.dart';
 class RegistrationCubit extends Cubit<RegistrationState> {
   final RegistrationUseCase registrationUseCase;
 
-  RegistrationCubit( this.registrationUseCase)
-      : super(RegistrationInitial());
+  RegistrationCubit(this.registrationUseCase) : super(RegistrationInitial());
 
   Future<void> register(dynamic body) async {
     emit(RegistrationLoading());
@@ -14,6 +13,7 @@ class RegistrationCubit extends Cubit<RegistrationState> {
       final result = await registrationUseCase.call(body);
       emit(RegistrationSuccess(result));
     } catch (e) {
+      print(e);
       emit(RegistrationFailure(e.toString()));
     }
   }

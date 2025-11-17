@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Eato Partner',
+                    'LocalBasket Partner',
                     style: GoogleFonts.montserrat(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
@@ -162,5 +162,4 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
-
 }

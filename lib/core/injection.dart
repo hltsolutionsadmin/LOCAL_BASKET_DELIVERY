@@ -16,6 +16,7 @@ import 'package:localbasket_delivery_partner/data/dataSource/orders/fetchOrders/
 import 'package:localbasket_delivery_partner/data/dataSource/orders/updateOrderStatus/updateOrderStatus_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/partnerDetails/partnerDetails_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/registration/registration_dataSource.dart';
+import 'package:localbasket_delivery_partner/data/dataSource/reports/reports_datasource.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/authentication/current_customer_repository_impl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/authentication/deleteAccount_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/authentication/rolesPost_repoImpl.dart';
@@ -30,6 +31,7 @@ import 'package:localbasket_delivery_partner/data/repoImpl/orders/fetchOrders/fe
 import 'package:localbasket_delivery_partner/data/repoImpl/orders/updateOrderStatus/updateOrderStatus_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/partnerDetails/partnerDetails_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/registration/registration_repoImpl.dart';
+import 'package:localbasket_delivery_partner/data/repoImpl/reports/reports_repoImpl.dart';
 import 'package:localbasket_delivery_partner/domain/repository/authentication/current_customer_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/authentication/deleteAccount_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/authentication/rolesPost_repository.dart';
@@ -44,6 +46,7 @@ import 'package:localbasket_delivery_partner/domain/repository/orders/fetchOrder
 import 'package:localbasket_delivery_partner/domain/repository/orders/updateOrderStatus/updateOrderStatus_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/partnerDetails/partnerDetails_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/registration/registration_repository.dart';
+import 'package:localbasket_delivery_partner/domain/repository/reports/reports_repository.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/authentication/current_customer_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/authentication/deleteAccount_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/authentication/rolesPost_usecase.dart';
@@ -58,6 +61,7 @@ import 'package:localbasket_delivery_partner/domain/usecase/orders/fetchOrders/f
 import 'package:localbasket_delivery_partner/domain/usecase/orders/updateOrderStatus/updateOrderStatus_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/partnerDetails/partnerDetails_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/registration/registration_usecase.dart';
+import 'package:localbasket_delivery_partner/domain/usecase/reports/reports_usecase.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_cubit.dart';
@@ -75,6 +79,7 @@ import 'package:localbasket_delivery_partner/presentation/cubit/registration/reg
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:localbasket_delivery_partner/presentation/cubit/reports/reports_cubit.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -300,18 +305,34 @@ void init() {
         sl<UpdateOrderStatusUseCase>(),
       ));
 
-      //
+  //
   //DeliverOtpVerification
   sl.registerLazySingleton<DeliverOtpRemoteDataSource>(
     () => DeliverOtpRemoteDataSourceImpl(client: sl<DioClient>().dio),
   );
   sl.registerLazySingleton<DeliverOtpRepository>(
-    () => DeliverOtpRepositoryImpl(remoteDataSource: sl<DeliverOtpRemoteDataSource>() ),
+    () => DeliverOtpRepositoryImpl(
+        remoteDataSource: sl<DeliverOtpRemoteDataSource>()),
   );
   sl.registerLazySingleton(
     () => DeliverOtpUseCase(repository: sl<DeliverOtpRepository>()),
   );
   sl.registerFactory(() => DeliverOtpCubit(
         useCase: sl<DeliverOtpUseCase>(),
+      ));
+
+  //Reports
+  sl.registerLazySingleton<ReportsRemoteDataSource>(
+    () => ReportsRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<ReportsRepository>(
+    () =>
+        ReportsRepositoryImpl(remoteDataSource: sl<ReportsRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => ReportsUseCase(repository: sl<ReportsRepository>()),
+  );
+  sl.registerFactory(() => ReportsCubit(
+        useCase: sl<ReportsUseCase>(),
       ));
 }
