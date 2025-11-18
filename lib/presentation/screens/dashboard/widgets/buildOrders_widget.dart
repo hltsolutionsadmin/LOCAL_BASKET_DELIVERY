@@ -25,6 +25,8 @@ class _BuildOrdersState extends State<BuildOrders> {
   bool isLoadingMore = false;
   bool allPagesLoaded = false;
   List<dynamic> allOrders = [];
+  String? customStatusText;
+  Widget? paymentBadge;
 
   @override
   void initState() {
@@ -81,6 +83,61 @@ class _BuildOrdersState extends State<BuildOrders> {
     }).toList();
   }
 
+  String formatStatus(String status) {
+    return status
+        .replaceAll("_", " ")
+        .toLowerCase()
+        .split(" ")
+        .map((e) => e[0].toUpperCase() + e.substring(1))
+        .join(" ");
+  }
+
+  // PAYMENT BADGE UI
+  Widget buildPaymentBadge(String? mode) {
+    final clean = (mode ?? "").toUpperCase();
+
+    Color bg;
+    Color text;
+
+    switch (clean) {
+      case "COD":
+        bg = Colors.orange.shade100;
+        text = Colors.orange.shade800;
+        break;
+
+      case "ONLINE":
+      case "PREPAID":
+        bg = Colors.green.shade100;
+        text = Colors.green.shade700;
+        break;
+
+      case "WALLET":
+        bg = Colors.blue.shade100;
+        text = Colors.blue.shade700;
+        break;
+
+      default:
+        bg = Colors.grey.shade200;
+        text = Colors.grey.shade600;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        clean,
+        style: TextStyle(
+          fontSize: 12,
+          color: text,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<UpdateOrderStatusCubit, UpdateOrderStatusState>(
@@ -135,7 +192,19 @@ class _BuildOrdersState extends State<BuildOrders> {
             itemCount: allOrders.length + (isLoadingMore ? 1 : 0),
             itemBuilder: (context, index) {
               if (index < allOrders.length) {
-                return OrderCardWidget(order: allOrders[index]);
+                final order = allOrders[index];
+
+                return Column(
+                  children: [
+                    OrderCardWidget(
+                      order: order,
+                      customStatusText:
+                          formatStatus(order.deliveryStatus ?? ""),
+                      paymentBadge: buildPaymentBadge(order.paymentStatus),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                );
               } else {
                 return const Padding(
                   padding: EdgeInsets.all(16),
