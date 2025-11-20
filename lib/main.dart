@@ -15,6 +15,7 @@ import 'package:localbasket_delivery_partner/presentation/cubit/orders/fetchOrde
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/reports/reports_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/authentication/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -83,6 +84,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<FetchOrdersCubit>()),
         BlocProvider(create: (_) => di.sl<UpdateOrderStatusCubit>()),
         BlocProvider(create: (_) => di.sl<DeliverOtpCubit>()),
+        BlocProvider(create: (_) => di.sl<ReportsCubit>()),
       ],
       child: MaterialApp(
         title: 'Localbasket',

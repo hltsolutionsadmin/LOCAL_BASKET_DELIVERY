@@ -12,6 +12,7 @@ const rolePostUrl = 'usermgmt/user/user';
 //partner
 const registrationUrl = 'delivery/api/partners';
 const availabilityUrl = 'delivery/api/partners/activeByToken?available';
+
 String fetchOrdersUrl(String partnerId, int page, int size) {
   return 'order/api/orders/by-partner?partnerId=$partnerId&status=&page=$page&size=$size';
 }
@@ -27,4 +28,8 @@ String deliverTriggerOtpUrl(String orderId) {
 
 String deliverVerifyOtpUrl(String orderId, String otp) {
   return 'order/api/orders/validate-delivery-otp?orderNumber=$orderId&otp=$otp';
+}
+
+String reportsUrl(String frequency, String from, String to, String format) {
+  return 'delivery/api/partners/reports?frequency=$frequency&from=$from&to=$to&format=$format';
 }

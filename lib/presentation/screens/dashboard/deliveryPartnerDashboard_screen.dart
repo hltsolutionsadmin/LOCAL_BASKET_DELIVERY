@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:localbasket_delivery_partner/core/constants/colors.dart';
 import 'package:localbasket_delivery_partner/core/constants/img_const.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/profile/deliveryPartnerProfile_screen.dart';
@@ -43,7 +42,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
             } else if (state is PartnerDetailsLoaded) {
               final partnerId =
                   state.partnerDetails.data?.deliveryPartnerId ?? '';
-              final available = state.partnerDetails.data?.active ?? false;
+              final available = state.partnerDetails.data?.available ?? false;
 
               if (!_isStatusInitialized) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -196,5 +195,4 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
       ),
     );
   }
-
 }

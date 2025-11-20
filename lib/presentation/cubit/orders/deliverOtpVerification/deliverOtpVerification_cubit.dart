@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/orders/deliverOtpVerification/deliverOtpVerification_usecase.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/deliverOtpVerification/deliverOtpVerification_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,11 +20,22 @@ class DeliverOtpCubit extends Cubit<DeliverOtpState> {
 
   Future<void> verifyOtp(String orderId, String otp) async {
     emit(DeliverOtpLoading());
+
     try {
       final result = await useCase.verifyOtp(orderId, otp);
       emit(DeliverOtpVerifySuccess(result));
     } catch (e) {
-      emit(DeliverOtpFailure(e.toString()));
+      String message = "Something went wrong";
+
+      if (e is DioException) {
+        final data = e.response?.data;
+
+        if (data != null && data is Map<String, dynamic>) {
+          message = data["errorMessage"] ?? message;
+        }
+      }
+
+      emit(DeliverOtpFailure(message));
     }
   }
 }

@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:localbasket_delivery_partner/core/constants/api_constants.dart';
 import 'package:localbasket_delivery_partner/data/model/registration/registration_model.dart';
 
-
 abstract class RegistrationRemoteDataSource {
   Future<RegistrationModel> registration(dynamic body);
 }

@@ -16,12 +16,6 @@ class FetchOrdersModel {
       data: json["data"] == null ? null : Data.fromJson(json["data"]),
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        "message": message,
-        "status": status,
-        "data": data?.toJson(),
-      };
 }
 
 class Data {
@@ -42,13 +36,13 @@ class Data {
   final List<Content> content;
   final Pageable? pageable;
   final bool? last;
-  final int? totalElements;
-  final int? totalPages;
-  final int? size;
-  final int? number;
+  final num? totalElements;
+  final num? totalPages;
+  final num? size;
+  final num? number;
   final List<Sort> sort;
   final bool? first;
-  final int? numberOfElements;
+  final num? numberOfElements;
   final bool? empty;
 
   factory Data.fromJson(Map<String, dynamic> json) {
@@ -72,20 +66,6 @@ class Data {
       empty: json["empty"],
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        "content": content.map((x) => x.toJson()).toList(),
-        "pageable": pageable?.toJson(),
-        "last": last,
-        "totalElements": totalElements,
-        "totalPages": totalPages,
-        "size": size,
-        "number": number,
-        "sort": sort.map((x) => x.toJson()).toList(),
-        "first": first,
-        "numberOfElements": numberOfElements,
-        "empty": empty,
-      };
 }
 
 class Content {
@@ -98,8 +78,10 @@ class Content {
     required this.userAddress,
     required this.businessId,
     required this.businessName,
+    required this.businessContactNumber,
     required this.shippingAddressId,
     required this.notes,
+    required this.timmimgs,
     required this.businessAddress,
     required this.totalAmount,
     required this.totalTaxAmount,
@@ -107,22 +89,28 @@ class Content {
     required this.paymentStatus,
     required this.paymentTransactionId,
     required this.orderStatus,
+    required this.deliveryStatus,
     required this.createdDate,
     required this.updatedDate,
     required this.deliveryPartnerId,
+    required this.deliveryPartnerName,
+    required this.deliveryPartnerMobileNumber,
+    required this.selfOrder,
     required this.orderItems,
   });
 
-  final int? id;
+  final num? id;
   final String? orderNumber;
-  final int? userId;
+  final num? userId;
   final String? username;
   final String? mobileNumber;
   final UserAddress? userAddress;
-  final int? businessId;
+  final num? businessId;
   final String? businessName;
-  final int? shippingAddressId;
-  final dynamic notes;
+  final dynamic businessContactNumber;
+  final num? shippingAddressId;
+  final String? notes;
+  final String? timmimgs;
   final BusinessAddress? businessAddress;
   final double? totalAmount;
   final double? totalTaxAmount;
@@ -130,9 +118,13 @@ class Content {
   final String? paymentStatus;
   final String? paymentTransactionId;
   final String? orderStatus;
+  final String? deliveryStatus;
   final DateTime? createdDate;
   final DateTime? updatedDate;
   final String? deliveryPartnerId;
+  final String? deliveryPartnerName;
+  final String? deliveryPartnerMobileNumber;
+  final bool? selfOrder;
   final List<OrderItem> orderItems;
 
   factory Content.fromJson(Map<String, dynamic> json) {
@@ -147,8 +139,10 @@ class Content {
           : UserAddress.fromJson(json["userAddress"]),
       businessId: json["businessId"],
       businessName: json["businessName"],
+      businessContactNumber: json["businessContactNumber"],
       shippingAddressId: json["shippingAddressId"],
       notes: json["notes"],
+      timmimgs: json["timmimgs"],
       businessAddress: json["businessAddress"] == null
           ? null
           : BusinessAddress.fromJson(json["businessAddress"]),
@@ -158,39 +152,19 @@ class Content {
       paymentStatus: json["paymentStatus"],
       paymentTransactionId: json["paymentTransactionId"],
       orderStatus: json["orderStatus"],
+      deliveryStatus: json["deliveryStatus"],
       createdDate: DateTime.tryParse(json["createdDate"] ?? ""),
       updatedDate: DateTime.tryParse(json["updatedDate"] ?? ""),
       deliveryPartnerId: json["deliveryPartnerId"],
+      deliveryPartnerName: json["deliveryPartnerName"],
+      deliveryPartnerMobileNumber: json["deliveryPartnerMobileNumber"],
+      selfOrder: json["selfOrder"],
       orderItems: json["orderItems"] == null
           ? []
           : List<OrderItem>.from(
               json["orderItems"]!.map((x) => OrderItem.fromJson(x))),
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "orderNumber": orderNumber,
-        "userId": userId,
-        "username": username,
-        "mobileNumber": mobileNumber,
-        "userAddress": userAddress?.toJson(),
-        "businessId": businessId,
-        "businessName": businessName,
-        "shippingAddressId": shippingAddressId,
-        "notes": notes,
-        "businessAddress": businessAddress?.toJson(),
-        "totalAmount": totalAmount,
-        "totalTaxAmount": totalTaxAmount,
-        "taxInclusive": taxInclusive,
-        "paymentStatus": paymentStatus,
-        "paymentTransactionId": paymentTransactionId,
-        "orderStatus": orderStatus,
-        "createdDate": createdDate?.toIso8601String(),
-        "updatedDate": updatedDate?.toIso8601String(),
-        "deliveryPartnerId": deliveryPartnerId,
-        "orderItems": orderItems.map((x) => x.toJson()).toList(),
-      };
 }
 
 class BusinessAddress {
@@ -205,7 +179,7 @@ class BusinessAddress {
     required this.postalCode,
   });
 
-  final int? id;
+  final num? id;
   final String? addressLine1;
   final String? city;
   final String? state;
@@ -226,17 +200,6 @@ class BusinessAddress {
       postalCode: json["postalCode"],
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "addressLine1": addressLine1,
-        "city": city,
-        "state": state,
-        "country": country,
-        "latitude": latitude,
-        "longitude": longitude,
-        "postalCode": postalCode,
-      };
 }
 
 class OrderItem {
@@ -254,16 +217,16 @@ class OrderItem {
     required this.taxIgnored,
   });
 
-  final int? id;
-  final int? productId;
-  final int? quantity;
+  final num? id;
+  final num? productId;
+  final num? quantity;
   final num? price;
-  final int? entryNumber;
+  final num? entryNumber;
   final String? productName;
-  final dynamic media;
-  final num? taxAmount;
+  final List<Media> media;
+  final double? taxAmount;
   final num? taxPercentage;
-  final num? totalAmount;
+  final double? totalAmount;
   final bool? taxIgnored;
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -274,27 +237,32 @@ class OrderItem {
       price: json["price"],
       entryNumber: json["entryNumber"],
       productName: json["productName"],
-      media: json["media"],
+      media: json["media"] == null
+          ? []
+          : List<Media>.from(json["media"]!.map((x) => Media.fromJson(x))),
       taxAmount: json["taxAmount"],
       taxPercentage: json["taxPercentage"],
       totalAmount: json["totalAmount"],
       taxIgnored: json["taxIgnored"],
     );
   }
+}
 
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "productId": productId,
-        "quantity": quantity,
-        "price": price,
-        "entryNumber": entryNumber,
-        "productName": productName,
-        "media": media,
-        "taxAmount": taxAmount,
-        "taxPercentage": taxPercentage,
-        "totalAmount": totalAmount,
-        "taxIgnored": taxIgnored,
-      };
+class Media {
+  Media({
+    required this.mediaType,
+    required this.url,
+  });
+
+  final String? mediaType;
+  final String? url;
+
+  factory Media.fromJson(Map<String, dynamic> json) {
+    return Media(
+      mediaType: json["mediaType"],
+      url: json["url"],
+    );
+  }
 }
 
 class UserAddress {
@@ -313,7 +281,7 @@ class UserAddress {
     required this.isDefault,
   });
 
-  final int? id;
+  final num? id;
   final String? addressLine1;
   final String? addressLine2;
   final String? street;
@@ -323,7 +291,7 @@ class UserAddress {
   final double? latitude;
   final double? longitude;
   final String? postalCode;
-  final int? userId;
+  final num? userId;
   final bool? isDefault;
 
   factory UserAddress.fromJson(Map<String, dynamic> json) {
@@ -342,21 +310,6 @@ class UserAddress {
       isDefault: json["isDefault"],
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "addressLine1": addressLine1,
-        "addressLine2": addressLine2,
-        "street": street,
-        "city": city,
-        "state": state,
-        "country": country,
-        "latitude": latitude,
-        "longitude": longitude,
-        "postalCode": postalCode,
-        "userId": userId,
-        "isDefault": isDefault,
-      };
 }
 
 class Pageable {
@@ -370,9 +323,9 @@ class Pageable {
   });
 
   final List<Sort> sort;
-  final int? pageNumber;
-  final int? pageSize;
-  final int? offset;
+  final num? pageNumber;
+  final num? pageSize;
+  final num? offset;
   final bool? paged;
   final bool? unpaged;
 
@@ -388,15 +341,6 @@ class Pageable {
       unpaged: json["unpaged"],
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        "sort": sort.map((x) => x.toJson()).toList(),
-        "pageNumber": pageNumber,
-        "pageSize": pageSize,
-        "offset": offset,
-        "paged": paged,
-        "unpaged": unpaged,
-      };
 }
 
 class Sort {
@@ -426,13 +370,4 @@ class Sort {
       descending: json["descending"],
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        "direction": direction,
-        "property": property,
-        "ignoreCase": ignoreCase,
-        "nullHandling": nullHandling,
-        "ascending": ascending,
-        "descending": descending,
-      };
 }
