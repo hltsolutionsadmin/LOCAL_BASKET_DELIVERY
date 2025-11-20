@@ -1,4 +1,4 @@
-package com.example.localbasket_delivery_partner
+package com.local_basket_partner
 
 import io.flutter.embedding.android.FlutterActivity
 

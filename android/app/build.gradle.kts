@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.localbasket_delivery_partner"
+    namespace = "com.local_basket_partner"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.localbasket_delivery_partner"
+        applicationId = "com.local_basket_partner"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

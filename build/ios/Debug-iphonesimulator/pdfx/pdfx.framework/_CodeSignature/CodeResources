@@ -14,7 +14,7 @@
 		</data>
 		<key>Headers/pdfx-Swift.h</key>
 		<data>
-		Xfcr3DvNUY0DQGRQ4PaBVGH4bwg=
+		9p2KWaqhbbGK1QY3qZ0aO30MIdg=
 		</data>
 		<key>Headers/pdfx-umbrella.h</key>
 		<data>
@@ -26,7 +26,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		bCpg4W1rbOQueabogrQPmVhxMDA=
+		5d9GPVXZDUQ8/JunSV52eLxcoQ4=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -34,11 +34,11 @@
 		</data>
 		<key>Modules/pdfx.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo</key>
 		<data>
-		OH4uOvcRiAIa8wMbVr36mSAoVrY=
+		2p+6ADP0J/QFAllHfHiaTmGLDPY=
 		</data>
 		<key>Modules/pdfx.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<data>
-		JLb9hJnLwr8w7rXR0wGpAfheIG0=
+		WV1O35d8PVHJ4pczlYI1/0JmTdE=
 		</data>
 		<key>Modules/pdfx.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
@@ -46,11 +46,11 @@
 		</data>
 		<key>Modules/pdfx.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		uWLzA6gLmk0xNTqlq+MtNsmTjR8=
+		r65EAAJq7pJQRqk1MjAT+1Dqj9w=
 		</data>
 		<key>Modules/pdfx.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		Vs2CiAYp3N5A2orBx+4Qr5bicf0=
+		aBb8XaN8uk6YujMAgOzUfINdSi8=
 		</data>
 		<key>Modules/pdfx.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
@@ -58,11 +58,11 @@
 		</data>
 		<key>Modules/pdfx.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		NNB0mXojx01CK2pYu5fSPrzKeQ8=
+		tpCPdv3ju9S1VvYA0JOtpfJgLZ0=
 		</data>
 		<key>Modules/pdfx.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		8sw/gNTrOsZQ3wTD6oR8kz7tDS4=
+		bHYUn5MG1s1anGalz3bk/6xVXvs=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -85,7 +85,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Xmp+9mhLhM4uyFij9jIkva64fZMNsjGPWCxtMMUkI+c=
+			Tb+e3Sgypof8VBLzTaqyYhJge87n1Hd9c0oOUyC66CQ=
 			</data>
 		</dict>
 		<key>Headers/pdfx-umbrella.h</key>
@@ -113,14 +113,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			0ozDKSsDrLZ8VvX2i5Xma0n0fpNFMrws2mXBEoRzFYM=
+			SFPAL7ND+H/Z50BTmEKsH/smlWJdNg1rw54U8qTntu4=
 			</data>
 		</dict>
 		<key>Modules/pdfx.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			NHq3/OQ2GvTqKNMw7ErV4SPb60KKu3QsvkXG0662d4I=
+			Uuu8O6e94kYufkwiQ0/SjPvTEIUmNGU/GJGT+E78e6s=
 			</data>
 		</dict>
 		<key>Modules/pdfx.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
@@ -134,14 +134,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			e1tXmYfcFehUscOOsDaCLmpiPtDix6jHOhjPrrwDUJw=
+			0/YGGxdE5T4vYdA4Vy2mrpl5JjdWO4At2XconMWN96k=
 			</data>
 		</dict>
 		<key>Modules/pdfx.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			+qyIy11E1RismOvw0TdNeyc1NzQeCQuPMtj7B+74uuY=
+			/KI4M++u8zlL/ZJhD2w+08rDyMgpqN3AYg5KWIxisFg=
 			</data>
 		</dict>
 		<key>Modules/pdfx.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
@@ -155,14 +155,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			xwbbZp3L5zZOlpa3MwTXZx9q018+NAl2ad/Q29sbPJA=
+			OODTjBAb1YE0+G5BqofB5QedqEYi5TQK4pVKz00+T7Q=
 			</data>
 		</dict>
 		<key>Modules/pdfx.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			puoqw40wCb4dGGThxw5X+CwPTPY6QVt6DHF/1bU7MPI=
+			Y8bIpRg6ZsKBnqajLbsx7HH6dyjgOU+VY3+tikbSQX8=
 			</data>
 		</dict>
 	</dict>
