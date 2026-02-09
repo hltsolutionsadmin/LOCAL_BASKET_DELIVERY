@@ -98,7 +98,7 @@ class NotificationServices {
   void _initializeLocalNotifications(
       BuildContext context, RemoteMessage message) async {
     const AndroidInitializationSettings androidInitSettings =
-        AndroidInitializationSettings('ic_notification_icon');
+        AndroidInitializationSettings('assets/images/png/ic_launcher.png');
     const DarwinInitializationSettings iosInitSettings =
         DarwinInitializationSettings();
 

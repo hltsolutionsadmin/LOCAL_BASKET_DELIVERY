@@ -41,48 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBZcYbNZ5tTYt8CHxqHrQXx3awEtCcVPGw',
-    appId: '1:791268615472:web:d4c5fbd542cc081015d4f5',
-    messagingSenderId: '791268615472',
-    projectId: 'eato-delivery-partner',
-    authDomain: 'eato-delivery-partner.firebaseapp.com',
-    storageBucket: 'eato-delivery-partner.firebasestorage.app',
-    measurementId: 'G-055BDHRSQM',
+    apiKey: 'AIzaSyButrWi1PeULfdOZcT55j-9YmX4Y8H7MmQ',
+    appId: '1:846077598972:web:300d54429a0082bbc94b79',
+    messagingSenderId: '846077598972',
+    projectId: 'localbasketpartner-ebda4',
+    authDomain: 'localbasketpartner-ebda4.firebaseapp.com',
+    storageBucket: 'localbasketpartner-ebda4.firebasestorage.app',
+    measurementId: 'G-5SX7C3E5QB',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAc9kt0yKhQ_8vSiadKZvddZhVOjoQjv7I',
-    appId: '1:791268615472:android:7450364ec97a7b1015d4f5',
-    messagingSenderId: '791268615472',
-    projectId: 'eato-delivery-partner',
-    storageBucket: 'eato-delivery-partner.firebasestorage.app',
+    apiKey: 'AIzaSyAWfqUFbHRGL4FsxjDkN_RsExVlcRmbIjc',
+    appId: '1:846077598972:android:b5bae2e0da7454c9c94b79',
+    messagingSenderId: '846077598972',
+    projectId: 'localbasketpartner-ebda4',
+    storageBucket: 'localbasketpartner-ebda4.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyC3sSAQeaZcyrG6chiE4rODlYFClHQUpEo',
-    appId: '1:791268615472:ios:e8da447c4552b53a15d4f5',
-    messagingSenderId: '791268615472',
-    projectId: 'eato-delivery-partner',
-    storageBucket: 'eato-delivery-partner.firebasestorage.app',
-    iosBundleId: 'com.example.eatoDeliveryPartner.RunnerTests',
+    apiKey: 'AIzaSyD6FoUmEp_-TskqLIVbQfqoQN8E5NXppH8',
+    appId: '1:846077598972:ios:b6e3d9169419310bc94b79',
+    messagingSenderId: '846077598972',
+    projectId: 'localbasketpartner-ebda4',
+    storageBucket: 'localbasketpartner-ebda4.firebasestorage.app',
+    iosBundleId: 'com.localbasket',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyC3sSAQeaZcyrG6chiE4rODlYFClHQUpEo',
-    appId: '1:791268615472:ios:939d654420eb64d715d4f5',
-    messagingSenderId: '791268615472',
-    projectId: 'eato-delivery-partner',
-    storageBucket: 'eato-delivery-partner.firebasestorage.app',
-    iosBundleId: 'com.example.eatoDeliveryPartner',
+    apiKey: 'AIzaSyD6FoUmEp_-TskqLIVbQfqoQN8E5NXppH8',
+    appId: '1:846077598972:ios:31a6f36c345c9312c94b79',
+    messagingSenderId: '846077598972',
+    projectId: 'localbasketpartner-ebda4',
+    storageBucket: 'localbasketpartner-ebda4.firebasestorage.app',
+    iosBundleId: 'com.example.localbasketDeliveryPartner',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBZcYbNZ5tTYt8CHxqHrQXx3awEtCcVPGw',
-    appId: '1:791268615472:web:0cd2df79d7c1500c15d4f5',
-    messagingSenderId: '791268615472',
-    projectId: 'eato-delivery-partner',
-    authDomain: 'eato-delivery-partner.firebaseapp.com',
-    storageBucket: 'eato-delivery-partner.firebasestorage.app',
-    measurementId: 'G-FLT71XXBBP',
+    apiKey: 'AIzaSyButrWi1PeULfdOZcT55j-9YmX4Y8H7MmQ',
+    appId: '1:846077598972:web:d5650f1f615a9a85c94b79',
+    messagingSenderId: '846077598972',
+    projectId: 'localbasketpartner-ebda4',
+    authDomain: 'localbasketpartner-ebda4.firebaseapp.com',
+    storageBucket: 'localbasketpartner-ebda4.firebasestorage.app',
+    measurementId: 'G-1C2JDRXQGB',
   );
 }

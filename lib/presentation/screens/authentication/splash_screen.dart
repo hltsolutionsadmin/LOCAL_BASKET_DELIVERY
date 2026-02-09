@@ -48,6 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _notificationServices.getDeviceToken().then((fcmToken) {
       if (!mounted) return;
       if (fcmToken != null) {
+        print('FCM Token: $fcmToken');
         final payload = {
           'fullName': '',
           'email': '',
