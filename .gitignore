@@ -1,0 +1,40 @@
+# ===============================
+# Flutter / Dart
+# ===============================
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+
+# ===============================
+# Android
+# ===============================
+android/.gradle/
+android/app/build/
+android/build/
+android/.cxx/
+
+# ===============================
+# iOS
+# ===============================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Flutter.xcconfig
+ios/Flutter/Generated.xcconfig
+
+# ===============================
+# IDE
+# ===============================
+.vscode/
+.idea/
+*.iml
+
+# ===============================
+# Keystore (VERY IMPORTANT)
+# ===============================
+**/*.keystore
+**/*.jks
+key.properties

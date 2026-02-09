@@ -7,34 +7,47 @@ plugins {
 
 android {
     namespace = "com.lb_partner"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+
+    // 🔥 Required by plugins (Android 15+ ready)
+    compileSdk = 36
+
+    // 🔥 Required for 16 KB page size support
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+        // ✅ REQUIRED for flutter_local_notifications
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "11"
     }
 
     defaultConfig {
         applicationId = "com.lb_partner"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        targetSdk = 35
+        versionCode = 8
+        versionName = "1.0.8"
+
+        // Required for 16 KB memory page size support
+        manifestPlaceholders["android.maxAspectRatio"] = "2.1"
+        
+        // Required for 16 KB memory page size support
+        ndk.abiFilters += listOf("arm64-v8a", "armeabi-v7a")
     }
 
     buildTypes {
         release {
-            // Temporary signing for release build
+            // keep your real signing config if you have one
             signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
+
 
 /* 🔴 THIS BLOCK WAS MISSING */
 dependencies {
