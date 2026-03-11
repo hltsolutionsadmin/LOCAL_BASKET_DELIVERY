@@ -1,5 +1,7 @@
 //usermanagement
-const baseUrl = 'https://kovela.app/';
+const baseUrl = 'http://localhost:9443/api/';
+// const baseUrl =
+//     'https://api-service.happybush-7c5a2823.centralindia.azurecontainerapps.io/api/';
 
 const TriggerOtp = 'usermgmt/auth/jtuserotp/trigger/otp?triggerOtp=false';
 const SigninUrl = 'usermgmt/auth/login';

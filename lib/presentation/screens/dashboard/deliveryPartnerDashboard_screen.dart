@@ -150,7 +150,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                         child: Switch(
                           value: isOnline,
                           onChanged: onToggle,
-                          activeColor: Colors.green,
+                          activeThumbColor: Colors.green,
                           inactiveThumbColor: Colors.red,
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,

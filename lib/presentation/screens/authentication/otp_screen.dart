@@ -9,7 +9,6 @@ import 'package:localbasket_delivery_partner/presentation/cubit/authentication/l
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/signin/signin_state.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/authentication/login_screen.dart';
-import 'package:localbasket_delivery_partner/presentation/screens/authentication/nameInput_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/dashboard/deliveryPartnerDashboard_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +40,7 @@ class _OtpScreenState extends State<OtpScreen> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _otpFocusNode = FocusNode();
   bool _hasNavigated = false;
-
+  bool _isLoadingDialogShown = false;
 
   @override
   void initState() {
@@ -85,6 +84,7 @@ class _OtpScreenState extends State<OtpScreen> {
           BlocListener<SignInCubit, SignInState>(
             listener: (context, state) {
               if (state is SignInLoading) {
+                _isLoadingDialogShown = true;
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -93,7 +93,11 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                 );
               } else {
-                Navigator.of(context, rootNavigator: true).pop();
+                if (_isLoadingDialogShown &&
+                    Navigator.of(context, rootNavigator: true).canPop()) {
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+                _isLoadingDialogShown = false;
               }
 
               if (state is SignInLoaded) {
@@ -122,17 +126,22 @@ class _OtpScreenState extends State<OtpScreen> {
               if (_hasNavigated) return;
 
               if (state is CurrentCustomerLoaded) {
-                _hasNavigated = true;
-                if (state.currentCustomerModel.deliveryPartner == true) {
+                final model = state.currentCustomerModel;
+                final roles = model.roles.map((r) => r.name).toList();
+                final hasDeliveryRole = roles.contains('ROLE_DELIVERY_PARTNER');
+
+                if (hasDeliveryRole) {
+                  _hasNavigated = true;
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                         builder: (_) => const DeliveryPartnerDashboard()),
                   );
                 } else {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const NameInputScreen()),
+                  CustomSnackbars.showErrorSnack(
+                    context: context,
+                    title: "Access Denied",
+                    message: "Contact Local Basket Admin",
                   );
                 }
               } else if (state is CurrentCustomerError) {
@@ -144,7 +153,6 @@ class _OtpScreenState extends State<OtpScreen> {
               }
             },
           ),
-
         ],
         child: Column(
           children: [
@@ -173,7 +181,6 @@ class _OtpScreenState extends State<OtpScreen> {
                 ],
               ),
             ),
-
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -195,7 +202,6 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
                     Row(
                       children: [
                         Expanded(
@@ -226,7 +232,6 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                       ],
                     ),
-
                     if (widget.otp != 'true') ...[
                       const SizedBox(height: 10),
                       Center(
@@ -240,7 +245,6 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                     ],
                     const SizedBox(height: 20),
-
                     Center(
                       child: Pinput(
                         focusNode: _otpFocusNode,
@@ -271,9 +275,7 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 30),
-
                     BlocBuilder<SignInCubit, SignInState>(
                       builder: (context, state) {
                         return SizedBox(
@@ -303,9 +305,7 @@ class _OtpScreenState extends State<OtpScreen> {
                         );
                       },
                     ),
-
                     const SizedBox(height: 18),
-
                     Center(
                       child: InkWell(
                         onTap: () {

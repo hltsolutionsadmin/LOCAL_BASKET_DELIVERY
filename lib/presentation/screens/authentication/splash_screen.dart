@@ -4,13 +4,11 @@ import 'package:localbasket_delivery_partner/core/utils/push_notication_services
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
-import 'package:localbasket_delivery_partner/presentation/screens/authentication/approvalPending_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/authentication/login_screen.dart';
-import 'package:localbasket_delivery_partner/presentation/screens/authentication/nameInput_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/dashboard/deliveryPartnerDashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -102,22 +100,50 @@ class _SplashScreenState extends State<SplashScreen> {
           final model = state.currentCustomerModel;
           final roles = model.roles.map((r) => r.name).toList();
           final hasDeliveryRole = roles.contains('ROLE_DELIVERY_PARTNER');
-          final isDeliveryPartner = model.deliveryPartner ?? false;
 
           if (hasDeliveryRole) {
-            if (isDeliveryPartner) {
-              _navigateTo(const DeliveryPartnerDashboard());
-            } else {
-              _navigateTo(const ApprovalPendingScreen());
-            }
+            _navigateManually = false;
+            _navigateTo(const DeliveryPartnerDashboard());
           } else {
-            if (!isDeliveryPartner) {
-              _navigateTo(const NameInputScreen());
-            } else {
+            _navigateManually = false;
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   SnackBar(
+            //     behavior: SnackBarBehavior.floating,
+            //     backgroundColor: Colors.black87,
+            //     margin:
+            //         const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(14),
+            //     ),
+            //     content: Row(
+            //       children: [
+            //         const Icon(
+            //           Icons.lock_outline,
+            //           color: Colors.white,
+            //           size: 18,
+            //         ),
+            //         const SizedBox(width: 10),
+            //         Expanded(
+            //           child: Text(
+            //             'You dont have access to this application',
+            //             style: const TextStyle(
+            //               color: Colors.white,
+            //               fontSize: 14,
+            //               fontWeight: FontWeight.w600,
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //     duration: const Duration(milliseconds: 1500),
+            //   ),
+            // );
+            Future.delayed(const Duration(milliseconds: 800), () {
               _navigateTo(const LoginScreen());
-            }
+            });
           }
         } else {
+          _navigateManually = false;
           _navigateTo(const LoginScreen());
         }
       },
@@ -132,32 +158,32 @@ class _SplashScreenState extends State<SplashScreen> {
             Container(
               color: Colors.black.withOpacity(0.6), // dark overlay for contrast
             ),
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'LocalBasket Partner',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Delivering on time, every time',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Center(
+            //   child: Column(
+            //     mainAxisSize: MainAxisSize.min,
+            //     children: [
+            //       Text(
+            //         'LocalBasket Partner',
+            //         style: GoogleFonts.montserrat(
+            //           fontSize: 40,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.white,
+            //           letterSpacing: 1.5,
+            //         ),
+            //       ),
+            //       const SizedBox(height: 8),
+            //       Text(
+            //         'Delivering on time, every time',
+            //         style: GoogleFonts.poppins(
+            //           color: Colors.white70,
+            //           fontSize: 14,
+            //           fontStyle: FontStyle.italic,
+            //           letterSpacing: 1,
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
