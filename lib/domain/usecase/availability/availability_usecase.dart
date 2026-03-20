@@ -6,7 +6,7 @@ class AvailabilityUseCase {
 
   AvailabilityUseCase({required this.repository});
 
-  Future<AvailabilityModel> call(bool availability) {
-    return repository.setAvailability(availability);
+  Future<AvailabilityModel> call(bool availability, String partnerId) {
+    return repository.setAvailability(availability, partnerId);
   }
 }

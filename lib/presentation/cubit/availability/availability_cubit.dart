@@ -8,10 +8,11 @@ class AvailabilityCubit extends Cubit<AvailabilityState> {
   AvailabilityCubit( this.setAvailabilityUseCase)
       : super(AvailabilityInitial());
 
-  void updateAvailability(bool availability) async {
+  void updateAvailability(bool availability, String partnerId) async {
+    print('Updating availability to: $availability');
     emit(AvailabilityLoading());
     try {
-      final result = await setAvailabilityUseCase(availability);
+      final result = await setAvailabilityUseCase(availability, partnerId);
       emit(AvailabilitySuccess(result));
     } catch (e) {
       emit(AvailabilityFailure(e.toString()));

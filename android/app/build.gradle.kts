@@ -29,15 +29,17 @@ android {
     defaultConfig {
         applicationId = "com.lb_partner"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
-        versionCode = 8
-        versionName = "1.0.8"
+        targetSdk = 35   // OK to keep 35; 36 also fine
+
+        versionCode = 7
+        versionName = "1.0.7"
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
 
         // Required for 16 KB memory page size support
         manifestPlaceholders["android.maxAspectRatio"] = "2.1"
-        
-        // Required for 16 KB memory page size support
-        ndk.abiFilters += listOf("arm64-v8a", "armeabi-v7a")
     }
 
     buildTypes {
