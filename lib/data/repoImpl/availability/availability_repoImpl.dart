@@ -8,7 +8,7 @@ class AvailabilityRepositoryImpl implements AvailabilityRepository {
   AvailabilityRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<AvailabilityModel> setAvailability(bool availability) {
-    return remoteDataSource.availability(availability);
+  Future<AvailabilityModel> setAvailability(bool availability, String partnerId) {
+    return remoteDataSource.availability(availability, partnerId);
   }
 }

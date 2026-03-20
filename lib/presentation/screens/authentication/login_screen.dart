@@ -216,13 +216,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 12),
-                                      Row(
+                                      Wrap(
+                                        spacing: 4,
+                                        runSpacing: 2,
                                         children: [
                                           const Text(
                                             "By continuing, you agree to our",
                                             style: TextStyle(fontSize: 13),
                                           ),
-                                          const SizedBox(width: 4),
                                           GestureDetector(
                                             onTap: () async {
                                               await Navigator.push(
@@ -233,14 +234,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 ),
                                               );
                                             },
-                                            child: Text.rich(
-                                              TextSpan(
-                                                text: 'Terms & Conditions',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppColor.primaryColor,
-                                                ),
+                                            child: Text(
+                                              'Terms & Conditions',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColor.primaryColor,
                                               ),
                                             ),
                                           ),

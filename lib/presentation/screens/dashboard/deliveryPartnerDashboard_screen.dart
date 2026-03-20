@@ -43,6 +43,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
               final partnerId =
                   state.partnerDetails.data?.deliveryPartnerId ?? '';
               final available = state.partnerDetails.data?.available ?? false;
+              print(partnerId);
 
               if (!_isStatusInitialized) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -57,7 +58,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                 children: [
                   buildHeader(context, isOnline, (val) {
                     setState(() => isOnline = val);
-                    context.read<AvailabilityCubit>().updateAvailability(val);
+                    context.read<AvailabilityCubit>().updateAvailability(val, partnerId);
                     Future.delayed(const Duration(milliseconds: 300), () {
                       context.read<PartnerDetailsCubit>().fetchPartnerDetails();
                     });
@@ -103,6 +104,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
     bool isOnline,
     ValueChanged<bool> onToggle,
   ) {
+    print(isOnline);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
       child: Row(
@@ -110,7 +112,10 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
         children: [
           // Left Section: Title + Online Toggle
           Flexible(
-            child: Row(
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
                   "Speed Delivery",
@@ -120,7 +125,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(width: 10),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -129,6 +133,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         isOnline ? Icons.circle : Icons.circle_outlined,

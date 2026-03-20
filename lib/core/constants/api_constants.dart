@@ -1,7 +1,34 @@
 //usermanagement
-const baseUrl = 'http://localhost:9443/api/';
-// const baseUrl =
-//     'https://api-service.happybush-7c5a2823.centralindia.azurecontainerapps.io/api/';
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
+
+// final String baseUrl = _resolveBaseUrl();
+final String baseUrl = 'https://api-service.happybush-7c5a2823.centralindia.azurecontainerapps.io/api/';
+// ;
+
+
+String _resolveBaseUrl() {
+  const defined = String.fromEnvironment('BASE_URL');
+  if (defined.isNotEmpty) {
+    return _ensureTrailingSlash(defined);
+  }
+
+  if (kReleaseMode) {
+    return _ensureTrailingSlash(
+      'https://api-service.happybush-7c5a2823.centralindia.azurecontainerapps.io/api/',
+    );
+  }
+
+  if (Platform.isAndroid) {
+    return _ensureTrailingSlash('http://10.0.2.2:9443/api/');
+  }
+  return _ensureTrailingSlash('http://localhost:9443/api/');
+}
+
+String _ensureTrailingSlash(String url) {
+  return url.endsWith('/') ? url : '$url/';
+}
 
 const TriggerOtp = 'usermgmt/auth/jtuserotp/trigger/otp?triggerOtp=false';
 const SigninUrl = 'usermgmt/auth/login';
@@ -13,7 +40,8 @@ const rolePostUrl = 'usermgmt/user/user';
 
 //partner
 const registrationUrl = 'delivery/api/partners';
-const availabilityUrl = 'delivery/api/partners/activeByToken?available';
+const availabilityUrl = 'delivery/api/partners/availability/';
+//delivery/api/partners/availability/DP260313-U22KB?available=true
 
 String fetchOrdersUrl(String partnerId, int page, int size) {
   return 'order/api/orders/by-partner?partnerId=$partnerId&status=&page=$page&size=$size';

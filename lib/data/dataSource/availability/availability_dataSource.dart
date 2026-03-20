@@ -3,7 +3,7 @@ import 'package:localbasket_delivery_partner/core/constants/api_constants.dart';
 import 'package:localbasket_delivery_partner/data/model/availability/availability_model.dart';
 
 abstract class AvailabilityRemoteDataSource {
-  Future<AvailabilityModel> availability(bool availability);
+  Future<AvailabilityModel> availability(bool availability, String partnerId);
 }
 
 class AvailabilityRemoteDataSourceImpl implements AvailabilityRemoteDataSource {
@@ -12,10 +12,10 @@ class AvailabilityRemoteDataSourceImpl implements AvailabilityRemoteDataSource {
   AvailabilityRemoteDataSourceImpl({required this.client});
 
   @override
-  Future<AvailabilityModel> availability(bool availability) async {
+  Future<AvailabilityModel> availability(bool availability, String partnerId) async {
     try {
       final response = await client.put(
-        '$baseUrl$availabilityUrl=$availability',
+        '$baseUrl$availabilityUrl$partnerId?available=$availability',
       );
 
       print('Availability Response: ${response.data}');

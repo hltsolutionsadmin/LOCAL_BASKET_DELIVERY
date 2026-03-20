@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for 16 KB memory page size support -->
+    <supports-screens android:requiresSmallestWidthDp="320" />
+    
     <application
         android:label="localbasket_delivery_partner"
         android:name="${applicationName}"
