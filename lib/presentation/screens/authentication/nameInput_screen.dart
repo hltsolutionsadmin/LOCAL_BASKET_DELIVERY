@@ -1,6 +1,7 @@
 import 'package:localbasket_delivery_partner/components/custom_button.dart';
 import 'package:localbasket_delivery_partner/components/custom_snackbar.dart';
 import 'package:localbasket_delivery_partner/components/custom_topbar.dart';
+import 'package:localbasket_delivery_partner/core/constants/api_constants.dart';
 import 'package:localbasket_delivery_partner/core/constants/colors.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
@@ -10,7 +11,6 @@ import 'package:localbasket_delivery_partner/presentation/cubit/authentication/r
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/roles/rolesPost_state.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/registration/registration_state.dart';
-import 'package:localbasket_delivery_partner/presentation/screens/authentication/approvalPending_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/dashboard/deliveryPartnerDashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -118,16 +118,12 @@ class _NameInputScreenState extends State<NameInputScreen> {
 
             if (state is CurrentCustomerLoaded) {
               final model = state.currentCustomerModel;
-              final roles = model.roles.map((r) => r.name).toList();
-              final hasDeliveryRole = roles.contains('ROLE_DELIVERY_PARTNER');
-              final isDeliveryPartner = model.deliveryPartner ?? false;
+              final roles = model.roles ?? [];
+              final hasDeliveryRole =
+                  roles.any((r) => r.startsWith(kFulfillmentAgentRole));
 
               if (hasDeliveryRole) {
-                if (isDeliveryPartner) {
-                  _navigateTo(const DeliveryPartnerDashboard());
-                } else {
-                  _navigateTo(const ApprovalPendingScreen());
-                }
+                _navigateTo(const DeliveryPartnerDashboard());
               }
             }
           },

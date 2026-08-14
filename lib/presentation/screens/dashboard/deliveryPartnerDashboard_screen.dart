@@ -1,13 +1,16 @@
-import 'package:localbasket_delivery_partner/core/constants/colors.dart';
-import 'package:localbasket_delivery_partner/core/constants/img_const.dart';
+import 'dart:async';
+import 'package:flutter/services.dart';
+import 'package:localbasket_delivery_partner/data/model/authentication/current_customer_model.dart';
+import 'package:localbasket_delivery_partner/data/model/orders/FetchOrders/fetchOrders_model.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_state.dart';
+import 'package:localbasket_delivery_partner/presentation/screens/dashboard/widgets/orderCard_widget.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/profile/deliveryPartnerProfile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_state.dart';
-import 'package:localbasket_delivery_partner/presentation/screens/dashboard/widgets/buildOrders_widget.dart';
 
 class DeliveryPartnerDashboard extends StatefulWidget {
   const DeliveryPartnerDashboard({super.key});
@@ -17,158 +20,140 @@ class DeliveryPartnerDashboard extends StatefulWidget {
       _DeliveryPartnerDashboardState();
 }
 
-class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  bool isOnline = false;
-  bool _isStatusInitialized = false;
+class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
+  Timer? _timer;
+  String? _partnerId;
+  List<Content> _orders = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    context.read<PartnerDetailsCubit>().fetchPartnerDetails();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = context.read<CurrentCustomerCubit>().state;
+      if (state is CurrentCustomerLoaded) {
+        _partnerId = state.currentCustomerModel.id;
+        _startPolling();
+      }
+    });
+  }
+
+  void _startPolling() {
+    _fetchOrders();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _fetchOrders();
+    });
+  }
+
+  void _fetchOrders() {
+    if (_partnerId == null || _partnerId!.isEmpty) return;
+    context.read<FetchOrdersCubit>().fetchOrders({
+      'partnerId': _partnerId,
+      'page': 0,
+      'size': 20,
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.white,
-      body: SafeArea(
-        child: BlocBuilder<PartnerDetailsCubit, PartnerDetailsState>(
-          builder: (context, state) {
-            if (state is PartnerDetailsLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is PartnerDetailsLoaded) {
-              final partnerId =
-                  state.partnerDetails.data?.deliveryPartnerId ?? '';
-              final available = state.partnerDetails.data?.available ?? false;
-              print(partnerId);
+    final user = context.select<CurrentCustomerCubit, CurrentCustomerModel?>(
+      (cubit) => cubit.state is CurrentCustomerLoaded
+          ? (cubit.state as CurrentCustomerLoaded).currentCustomerModel
+          : null,
+    );
 
-              if (!_isStatusInitialized) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  setState(() {
-                    isOnline = available;
-                    _isStatusInitialized = true;
-                  });
-                });
-              }
-
-              return Column(
-                children: [
-                  buildHeader(context, isOnline, (val) {
-                    setState(() => isOnline = val);
-                    context.read<AvailabilityCubit>().updateAvailability(val, partnerId);
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      context.read<PartnerDetailsCubit>().fetchPartnerDetails();
-                    });
-                  }),
-                  const Divider(),
-                  // buildSummaryCards(),
-                  const SizedBox(height: 8),
-                  TabBar(
-                    controller: _tabController,
-                    labelColor: Colors.black,
-                    labelStyle:
-                        GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    indicatorColor: Colors.blueAccent,
-                    tabs: const [
-                      Tab(text: "Accepted"),
-                      Tab(text: "Delivered"),
-                    ],
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        BuildOrders("Accepted", partnerId),
-                        BuildOrders("Delivered", partnerId),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            } else if (state is PartnerDetailsError) {
-              return Center(child: Text("Error: ${state.message}"));
-            } else {
-              return const SizedBox.shrink();
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6F8),
+        body: BlocListener<FetchOrdersCubit, FetchOrdersState>(
+          listener: (context, state) {
+            if (state is FetchOrdersSuccess) {
+              setState(() {
+                _orders = state.orders.data?.content ?? const <Content>[];
+              });
+            } else if (state is FetchOrdersFailure) {
+              setState(() {
+                _orders = [];
+              });
             }
           },
+          child: Column(
+            children: [
+              buildHeader(context, user),
+              const SizedBox(height: 10),
+              Expanded(child: _buildOrders()),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget buildHeader(
-    BuildContext context,
-    bool isOnline,
-    ValueChanged<bool> onToggle,
-  ) {
-    print(isOnline);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Left Section: Title + Online Toggle
-          Flexible(
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  "Speed Delivery",
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: isOnline ? Colors.green.shade50 : Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isOnline ? Icons.circle : Icons.circle_outlined,
-                        size: 8,
-                        color: isOnline ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        isOnline ? "Online" : "Offline",
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: isOnline ? Colors.green : Colors.red,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Transform.scale(
-                        scale: 0.75,
-                        child: Switch(
-                          value: isOnline,
-                          onChanged: onToggle,
-                          activeThumbColor: Colors.green,
-                          inactiveThumbColor: Colors.red,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+  Widget _buildOrders() {
+    if (_orders.isEmpty) {
+      return Center(
+        child: Text(
+          "No orders yet",
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: Colors.grey.shade600,
           ),
+        ),
+      );
+    }
 
-          // Right Section: Profile Avatar
+    return RefreshIndicator(
+      onRefresh: () async => _fetchOrders(),
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        itemCount: _orders.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final order = _orders[index];
+          return OrderCardWidget(order: order);
+        },
+      ),
+    );
+  }
+
+  Widget buildHeader(BuildContext context, CurrentCustomerModel? user) {
+    final initials = _getInitials(user?.fullName);
+
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16, topPadding + 12, 16, 14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFA726), Color(0xFFFF6F00)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 12,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -183,21 +168,103 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 3,
-                    offset: Offset(0, 1.5),
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
-              child: const CircleAvatar(
-                radius: 18,
-                backgroundImage: AssetImage(rider),
-                backgroundColor: Colors.grey,
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.white.withOpacity(0.9),
+                child: Text(
+                  initials,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFFF6F00),
+                  ),
+                ),
               ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        "Local Basket HD",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    user?.fullName ?? 'Partner',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.phone, size: 13, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        user?.mobile ?? 'No Contact',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.circle, size: 9, color: Colors.white),
+                SizedBox(width: 5),
+                Text(
+                  "Active",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _getInitials(String? fullName) {
+    if (fullName == null || fullName.trim().isEmpty) return 'NA';
+    final parts = fullName.trim().split(' ');
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts.last[0]).toUpperCase();
   }
 }

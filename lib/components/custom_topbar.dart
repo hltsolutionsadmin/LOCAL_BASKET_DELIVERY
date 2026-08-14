@@ -5,16 +5,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onBackPressed;
   final bool showBackButton;
+  final bool orangeTheme;
 
   const CustomAppBar({
     super.key,
     required this.title,
     this.onBackPressed,
     this.showBackButton = true,
+    this.orangeTheme = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final foregroundColor = orangeTheme ? Colors.white : AppColor.black;
     return Material(
       elevation: 6,
       shadowColor: Colors.black.withOpacity(0.15),
@@ -24,14 +27,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColor.white.withOpacity(0.95),
-              AppColor.white.withOpacity(0.85),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: orangeTheme
+              ? const LinearGradient(
+                  colors: [Color(0xFFFFA726), Color(0xFFFF6F00)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : LinearGradient(
+                  colors: [
+                    AppColor.white.withOpacity(0.95),
+                    AppColor.white.withOpacity(0.85),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(24),
             bottomRight: Radius.circular(24),
@@ -49,7 +58,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   IconButton(
                     icon:
                         const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
-                    color: AppColor.black,
+                    color: foregroundColor,
                     onPressed: onBackPressed ?? () => Navigator.pop(context),
                   )
                 else
@@ -59,7 +68,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     child: Text(
                       title,
                       style: TextStyle(
-                        color: AppColor.black,
+                        color: foregroundColor,
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1.0,

@@ -2,7 +2,7 @@ name: localbasket_delivery_partner
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+10
 
 environment:
   sdk: ^3.5.3
@@ -28,7 +28,6 @@ dependencies:
   intl: ^0.20.2
   file_picker: ^9.0.0
   pdfx: ^2.8.0
-  flutter_pdfview: ^1.4.0
   google_fonts: ^6.1.0
   firebase_core: ^3.13.0
   firebase_messaging: ^15.2.4

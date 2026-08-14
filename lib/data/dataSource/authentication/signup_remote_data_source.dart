@@ -14,7 +14,6 @@ class SignUpRemoteDataSourceImpl implements SignUpRemoteDataSource {
   @override
   Future<SignUpModel> fetchOtp(String mobileNumber) async {
     final payload = {
-      "otpType": "SIGNIN",
       "primaryContact": mobileNumber,
     };
     print('payload: $payload');
