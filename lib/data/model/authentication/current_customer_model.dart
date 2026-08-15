@@ -1,103 +1,66 @@
 class CurrentCustomerModel {
   CurrentCustomerModel({
-    required this.id,
-    required this.fullName,
-    required this.email,
-    required this.roles,
-    required this.primaryContact,
-    required this.creationTime,
-    required this.token,
-    required this.version,
-    required this.skillrat,
-    required this.yardly,
-    required this.eato,
-    required this.sancharalakshmi,
-    required this.deliveryPartner,
-    required this.media,
-    required this.userVerificationStatus,
-    required this.registered,
+    this.id,
+    this.username,
+    this.email,
+    this.mobile,
+    this.firstName,
+    this.lastName,
+    this.roles,
+    this.b2bUnitId,
+    this.b2bUnit,
+    this.storeId,
+    this.store,
   });
 
-  final int? id;
-  final String? fullName;
+  final String? id;
+  final String? username;
   final String? email;
-  final List<Role> roles;
-  final String? primaryContact;
-  final DateTime? creationTime;
-  final String? token;
-  final int? version;
-  final bool? skillrat;
-  final bool? yardly;
-  final bool? eato;
-  final bool? sancharalakshmi;
-  final bool? deliveryPartner;
-  final List<dynamic> media;
-  final String? userVerificationStatus;
-  final bool? registered;
+  final String? mobile;
+  final String? firstName;
+  final String? lastName;
+  final List<String>? roles;
+  final dynamic b2bUnitId;
+  final dynamic b2bUnit;
+  final dynamic storeId;
+  final dynamic store;
+
+  String? get fullName {
+    final first = firstName?.trim() ?? '';
+    final last = lastName?.trim() ?? '';
+    if (first.isEmpty && last.isEmpty) return null;
+    return '$first $last'.trim();
+  }
 
   factory CurrentCustomerModel.fromJson(Map<String, dynamic> json) {
     return CurrentCustomerModel(
       id: json["id"],
-      fullName: json["fullName"],
+      username: json["username"],
       email: json["email"],
+      mobile: json["mobile"],
+      firstName: json["firstName"],
+      lastName: json["lastName"],
       roles: json["roles"] == null
           ? []
-          : List<Role>.from(json["roles"]!.map((x) => Role.fromJson(x))),
-      primaryContact: json["primaryContact"],
-      creationTime: DateTime.tryParse(json["creationTime"] ?? ""),
-      token: json["token"],
-      version: json["version"],
-      skillrat: json["skillrat"],
-      yardly: json["yardly"],
-      eato: json["eato"],
-      sancharalakshmi: json["sancharalakshmi"],
-      deliveryPartner: json["deliveryPartner"],
-      media: json["media"] == null
-          ? []
-          : List<dynamic>.from(json["media"]!.map((x) => x)),
-      userVerificationStatus: json["userVerificationStatus"],
-      registered: json["registered"],
+          : List<String>.from(json["roles"]!.map((x) => x)),
+      b2bUnitId: json["b2bUnitId"],
+      b2bUnit: json["b2bUnit"],
+      storeId: json["storeId"],
+      store: json["store"],
     );
   }
 
   Map<String, dynamic> toJson() => {
         "id": id,
-        "fullName": fullName,
+        "username": username,
         "email": email,
-        "roles": roles.map((x) => x.toJson()).toList(),
-        "primaryContact": primaryContact,
-        "creationTime": creationTime?.toIso8601String(),
-        "token": token,
-        "version": version,
-        "skillrat": skillrat,
-        "yardly": yardly,
-        "eato": eato,
-        "sancharalakshmi": sancharalakshmi,
-        "deliveryPartner": deliveryPartner,
-        "media": media.map((x) => x).toList(),
-        "userVerificationStatus": userVerificationStatus,
-        "registered": registered,
-      };
-}
-
-class Role {
-  Role({
-    required this.name,
-    required this.id,
-  });
-
-  final String? name;
-  final int? id;
-
-  factory Role.fromJson(Map<String, dynamic> json) {
-    return Role(
-      name: json["name"],
-      id: json["id"],
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        "name": name,
-        "id": id,
+        "mobile": mobile,
+        "firstName": firstName,
+        "lastName": lastName,
+        "roles": roles,
+        "b2bUnitId": b2bUnitId,
+        "b2bUnit": b2bUnit,
+        "storeId": storeId,
+        "store": store,
       };
 }

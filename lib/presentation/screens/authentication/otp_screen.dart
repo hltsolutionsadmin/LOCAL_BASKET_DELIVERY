@@ -1,5 +1,6 @@
 import 'package:localbasket_delivery_partner/components/custom_button.dart';
 import 'package:localbasket_delivery_partner/components/custom_snackbar.dart';
+import 'package:localbasket_delivery_partner/core/constants/api_constants.dart';
 import 'package:localbasket_delivery_partner/core/constants/colors.dart';
 import 'package:localbasket_delivery_partner/core/constants/img_const.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
@@ -127,8 +128,9 @@ class _OtpScreenState extends State<OtpScreen> {
 
               if (state is CurrentCustomerLoaded) {
                 final model = state.currentCustomerModel;
-                final roles = model.roles.map((r) => r.name).toList();
-                final hasDeliveryRole = roles.contains('ROLE_DELIVERY_PARTNER');
+                final roles = model.roles ?? [];
+                final hasDeliveryRole =
+                    roles.any((r) => r.startsWith(kFulfillmentAgentRole));
 
                 if (hasDeliveryRole) {
                   _hasNavigated = true;
@@ -206,7 +208,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            "Sending tasty updates to +91 ${widget.mobileNumber}",
+                            "Sending Otp to +91 ${widget.mobileNumber}",
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.grey.shade700,
@@ -244,6 +246,49 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                       ),
                     ],
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColor.primaryColor.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColor.primaryColor.withOpacity(0.2),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColor.primaryColor.withOpacity(0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.phone_in_talk_rounded,
+                              size: 16,
+                              color: AppColor.primaryColor,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              "You may receive your OTP via a phone call instead of SMS",
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     Center(
                       child: Pinput(

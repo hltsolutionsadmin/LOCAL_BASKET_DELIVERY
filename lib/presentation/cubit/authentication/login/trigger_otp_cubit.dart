@@ -84,7 +84,7 @@ class TriggerOtpCubit extends Cubit<TriggerOtpState> {
     try {
       final otpEntity = await useCase(mobileNumber);
       emit(ResendOtpLoaded(otpEntity));
-      if (otpEntity.creationTime?.isNotEmpty == true) {
+      if (otpEntity.otp?.isNotEmpty == true) {
         final otpValue =
             otpEntity.otp?.isNotEmpty == true ? otpEntity.otp! : 'true';
         print(otpValue);

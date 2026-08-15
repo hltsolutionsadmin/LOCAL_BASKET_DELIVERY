@@ -31,8 +31,8 @@ android {
         minSdk = flutter.minSdkVersion
         targetSdk = 35   // OK to keep 35; 36 also fine
 
-        versionCode = 7
-        versionName = "1.0.7"
+        versionCode = 10
+        versionName = "1.0.10"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")

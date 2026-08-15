@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:localbasket_delivery_partner/core/constants/api_constants.dart';
 import 'package:localbasket_delivery_partner/core/constants/img_const.dart';
 import 'package:localbasket_delivery_partner/core/utils/push_notication_services.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
@@ -98,8 +99,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
         if (state is CurrentCustomerLoaded) {
           final model = state.currentCustomerModel;
-          final roles = model.roles.map((r) => r.name).toList();
-          final hasDeliveryRole = roles.contains('ROLE_DELIVERY_PARTNER');
+          final roles = model.roles ?? [];
+          final hasDeliveryRole =
+              roles.any((r) => r.startsWith(kFulfillmentAgentRole));
 
           if (hasDeliveryRole) {
             _navigateManually = false;

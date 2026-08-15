@@ -1,7 +1,4 @@
-import 'dart:ui';
 import 'package:localbasket_delivery_partner/components/custom_topbar.dart';
-import 'package:localbasket_delivery_partner/core/constants/colors.dart';
-import 'package:localbasket_delivery_partner/core/constants/img_const.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,26 +44,12 @@ class _DeliveryPartnerProfileScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.white,
-      appBar: CustomAppBar(title: "Profile"),
+      backgroundColor: const Color(0xFFF4F6F8),
+      appBar: const CustomAppBar(title: "Profile", orangeTheme: true),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
-                height: 300,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Image.asset(
-                        delivery,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: BlocBuilder<CurrentCustomerCubit, CurrentCustomerState>(
@@ -86,83 +69,79 @@ class _DeliveryPartnerProfileScreenState
                       final initials = getInitials(user.fullName);
 
                       return Container(
-                        margin: const EdgeInsets.only(top: 24),
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(top: 20),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color.fromRGBO(3, 203, 243, 1)
-                                  .withOpacity(0.3),
-                              Colors.blueGrey.withOpacity(0.01),
-                            ],
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFA726), Color(0xFFFF6F00)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 12,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Row(
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundColor: Colors.white.withOpacity(0.9),
+                              child: Text(
+                                initials,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFFF6F00),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CircleAvatar(
-                                    radius: 40,
-                                    backgroundColor:
-                                        Colors.black.withOpacity(0.25),
-                                    child: Text(
-                                      initials,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
+                                  Text(
+                                    user.fullName ?? 'No Name',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                  const SizedBox(width: 20),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          user.fullName ?? 'No Name',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.phone,
+                                          size: 15, color: Colors.white),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        user.mobile ?? 'No Contact',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 15,
+                                          color: Colors.white,
                                         ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          user.primaryContact ?? 'No Contact',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 16,
-                                            color: Colors.black,
-                                            shadows: [
-                                              Shadow(
-                                                blurRadius: 4,
-                                                color: Colors.black
-                                                    .withOpacity(0.3),
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       );
                     } else if (state is CurrentCustomerLoading) {
-                      return const CupertinoActivityIndicator();
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: CupertinoActivityIndicator(),
+                      );
                     } else if (state is CurrentCustomerError) {
-                      return Text("N/A");
+                      return const Text("N/A");
                     }
                     return const SizedBox();
                   },
@@ -179,7 +158,7 @@ class _DeliveryPartnerProfileScreenState
                     _optionTile(
                       title: "Reports",
                       icon: Icons.assessment_outlined,
-                      color: Colors.blue,
+                      color: const Color(0xFFFF6F00),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -192,7 +171,7 @@ class _DeliveryPartnerProfileScreenState
                     _optionTile(
                       title: "Logout",
                       icon: Icons.logout,
-                      color: Colors.orange,
+                      color: const Color(0xFFFF6F00),
                       onTap: () {
                         _showBottomSheet(const LogOutCnfrmBottomSheet());
                       },

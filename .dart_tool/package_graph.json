@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "localbasket_delivery_partner",
-      "version": "1.0.0+1",
+      "version": "1.0.1+10",
       "dependencies": [
         "carousel_slider",
         "connectivity_plus",
@@ -19,7 +19,6 @@
         "flutter_bloc",
         "flutter_local_notifications",
         "flutter_map",
-        "flutter_pdfview",
         "flutter_secure_storage",
         "flutter_svg",
         "geocoding",
@@ -274,13 +273,6 @@
         "flutter",
         "http",
         "path_provider"
-      ]
-    },
-    {
-      "name": "flutter_pdfview",
-      "version": "1.4.1+1",
-      "dependencies": [
-        "flutter"
       ]
     },
     {

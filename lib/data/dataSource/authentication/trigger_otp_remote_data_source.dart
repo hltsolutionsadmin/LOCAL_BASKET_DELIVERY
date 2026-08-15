@@ -15,14 +15,17 @@ class TriggerOtpRemoteDataSourceImpl implements TriggerOtpRemoteDataSource {
   @override
   Future<TriggerOtpModel> fetchOtp(String mobileNumber) async {
     final payload = {
-      "otpType": "SIGNIN",
       "primaryContact": mobileNumber,
     };
     print('payload: $payload');
     try {
+      final otpBaseUrl = baseUrl.replaceFirst('/api/', '');
       final response = await client.request(
-        '$baseUrl$TriggerOtp',
-        options: Options(method: 'POST'),
+        '$otpBaseUrl$TriggerOtp',
+        options: Options(
+          method: 'POST',
+          headers: {'X-Skillrat-Tenant': 'default'},
+        ),
         data: payload,
       );
 

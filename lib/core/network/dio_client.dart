@@ -26,7 +26,11 @@ class DioClient {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? token = prefs.getString('TOKEN');
 
-        options.headers["Authorization"] = "Bearer $token";
+        if (token != null && token.isNotEmpty) {
+          options.headers["Authorization"] = "Bearer $token";
+        } else {
+          options.headers.remove("Authorization");
+        }
       
         log('REQUEST[${options.method}] => PATH: ${options.path} '
             '=> Request Values: ${options.queryParameters}, => HEADERS: ${options.headers}');
@@ -39,8 +43,10 @@ class DioClient {
       onError: (DioException error, handler) async {
         final statusCode = error.response?.statusCode;
         print(statusCode);
-        final errorMessage =
-            error.response?.data['message'] ?? 'Unknown error occurred';
+        final errorData = error.response?.data;
+        final errorMessage = errorData is Map
+            ? errorData['message'] ?? 'Unknown error occurred'
+            : 'Unknown error occurred';
 
         log('ERROR[$statusCode] => MESSAGE: $errorMessage');
 
@@ -62,7 +68,8 @@ class DioClient {
                 },
               );
 
-              final newToken = refreshResponse.data['token'];
+              final newToken = refreshResponse.data['accessToken'] ??
+                  refreshResponse.data['token'];
               final newRefreshToken = refreshResponse.data['refreshToken'];
 
               await prefs.setString('TOKEN', newToken);

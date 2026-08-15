@@ -50,9 +50,9 @@ class SignInCubit extends Cubit<SignInState> {
         final signEntity = await useCase(mobileNumber, otp, fullName);
         print('signEntity: $signEntity');
 
-        if (signEntity.token != null && signEntity.token!.isNotEmpty) {
+        if (signEntity.accessToken != null && signEntity.accessToken!.isNotEmpty) {
           final prefs = await SharedPreferences.getInstance();
-          prefs.setString('TOKEN', signEntity.token ?? '');
+          prefs.setString('TOKEN', signEntity.accessToken ?? '');
           prefs.setString('REFRESH_TOKEN', signEntity.refreshToken ?? '');
           context.read<CurrentCustomerCubit>().GetCurrentCustomer(context);
         } else {
