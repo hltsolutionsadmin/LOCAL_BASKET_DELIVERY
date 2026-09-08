@@ -40,6 +40,16 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
   bool _loadingMore = false;
   bool _initialLoading = true;
 
+  /// Orders whose status update is in flight — their card button shows a
+  /// spinner until the refreshed list actually reflects the new status.
+  final Set<String> _updatingIds = {};
+
+  /// orderId -> the status we just pushed, so we can tell a fresh list
+  /// response apart from a stale poll response that was already in flight.
+  final Map<String, String> _expectedStatus = {};
+  bool _awaitingUpdateRefresh = false;
+  int _updateRefreshAttempts = 0;
+
   @override
   void initState() {
     super.initState();
@@ -48,16 +58,22 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
       final state = context.read<CurrentCustomerCubit>().state;
       if (state is CurrentCustomerLoaded) {
         _partnerId = state.currentCustomerModel.id;
-        _startPolling();
+        _fetchOrders(page: 0);
+        _resumePolling();
       }
     });
   }
 
-  void _startPolling() {
-    _fetchOrders(page: 0);
+  void _resumePolling() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 5), (_) {
       _fetchOrders(page: 0);
     });
+  }
+
+  void _pausePolling() {
+    _timer?.cancel();
+    _timer = null;
   }
 
   void _onScroll() {
@@ -120,10 +136,26 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
           listeners: [
             BlocListener<UpdateOrderStatusCubit, UpdateOrderStatusState>(
               listener: (context, state) {
-                if (state is UpdateOrderStatusSuccess) {
-                  // Refresh immediately so the button advances / the card
-                  // drops off without waiting for the next poll tick.
+                if (state is UpdateOrderStatusLoading) {
+                  // Stop the 5s poll so a stale in-flight response can't
+                  // overwrite the order we're about to change.
+                  _pausePolling();
+                  setState(() {
+                    _updatingIds.add(state.orderId);
+                    _expectedStatus[state.orderId] = state.status.toUpperCase();
+                  });
+                } else if (state is UpdateOrderStatusSuccess) {
+                  // Server accepted it — now pull one fresh list and keep the
+                  // button spinning until that list reflects the new status.
+                  _awaitingUpdateRefresh = true;
+                  _updateRefreshAttempts = 0;
                   _fetchOrders(page: 0);
+                } else if (state is UpdateOrderStatusFailure) {
+                  setState(() {
+                    _updatingIds.remove(state.orderId);
+                    _expectedStatus.remove(state.orderId);
+                  });
+                  _resumePolling();
                 }
               },
             ),
@@ -133,6 +165,25 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                   final data = state.orders.data;
                   final pageNo = (data?.number ?? 0).toInt();
                   final content = data?.content ?? const <Content>[];
+
+                  // A status update is settling.
+                  if (_updatingIds.isNotEmpty) {
+                    if (!_awaitingUpdateRefresh) {
+                      // Update still running; ignore any poll noise.
+                      return;
+                    }
+                    if (!_responseReflectsUpdate(content) &&
+                        _updateRefreshAttempts < 5) {
+                      // Stale response — server hasn't caught up. Retry.
+                      _updateRefreshAttempts++;
+                      Future.delayed(const Duration(milliseconds: 600), () {
+                        if (mounted && _awaitingUpdateRefresh) {
+                          _fetchOrders(page: 0);
+                        }
+                      });
+                      return;
+                    }
+                  }
 
                   setState(() {
                     // First page while not paginated: the first page is the
@@ -149,6 +200,13 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                     }
                     _loadingMore = false;
                     _initialLoading = false;
+                    if (_awaitingUpdateRefresh) {
+                      _updatingIds.clear();
+                      _expectedStatus.clear();
+                      _awaitingUpdateRefresh = false;
+                      _updateRefreshAttempts = 0;
+                      _resumePolling();
+                    }
                     _orders = _sortByNewest(
                         _filterTodayActiveOrders(_ordersById.values.toList()));
                   });
@@ -171,6 +229,16 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
         ),
       ),
     );
+  }
+
+  /// `true` once the fetched list shows every just-updated order at its new
+  /// status (or gone from the page, e.g. delivered).
+  bool _responseReflectsUpdate(List<Content> content) {
+    return _expectedStatus.entries.every((entry) {
+      final matches = content.where((o) => o.id == entry.key);
+      if (matches.isEmpty) return true;
+      return (matches.first.status ?? '').toUpperCase() == entry.value;
+    });
   }
 
   /// Only today's orders that still need action — delivered orders live in
@@ -239,7 +307,11 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
             );
           }
           final order = _orders[index];
-          return OrderCardWidget(order: order);
+          return OrderCardWidget(
+            key: ValueKey(order.id),
+            order: order,
+            isUpdating: order.id != null && _updatingIds.contains(order.id),
+          );
         },
       ),
     );

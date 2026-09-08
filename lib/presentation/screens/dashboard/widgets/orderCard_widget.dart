@@ -13,11 +13,16 @@ class OrderCardWidget extends StatelessWidget {
   final String? customStatusText;
   final Widget? paymentBadge;
 
+  /// While `true`, this card's action button shows a spinner (a status update
+  /// for this order is in flight).
+  final bool isUpdating;
+
   const OrderCardWidget({
     super.key,
     required this.order,
     this.customStatusText,
     this.paymentBadge,
+    this.isUpdating = false,
   });
 
   @override
@@ -96,12 +101,21 @@ class OrderCardWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Order #${_last4(order.orderNumber)}",
+                order.customerName ?? "Customer",
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
+                  fontSize: 15,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
+              Text(
+                "Order #${_last4(order.orderNumber)}",
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 6),
               statusChip(customStatusText ?? status),
             ],
           ),
@@ -182,7 +196,9 @@ class OrderCardWidget extends StatelessWidget {
         const SizedBox(height: 12),
         _addressRow(
           "Delivery",
-          order.userAddress?.addressLine1 ?? "N/A",
+          order.userAddress?.addressLine1 ??
+              order.customerName ??
+              "N/A",
           Icons.delivery_dining,
           Colors.teal.shade400,
         ),
@@ -235,7 +251,9 @@ class OrderCardWidget extends StatelessWidget {
       case "READY_FOR_PICKUP":
         return Row(
           children: [
-            actionButton("Accept", Colors.green.shade600, () => update("PICKED_UP")),
+            actionButton(
+                "Accept", Colors.green.shade600, () => update("PICKED_UP"),
+                isLoading: isUpdating),
           ],
         );
 
@@ -245,8 +263,9 @@ class OrderCardWidget extends StatelessWidget {
       case "PICKED_UP":
         return Row(
           children: [
-            actionButton(
-                "In Delivery", Colors.blue.shade600, () => update("IN_DELIVERY")),
+            actionButton("In Delivery", Colors.blue.shade600,
+                () => update("IN_DELIVERY"),
+                isLoading: isUpdating),
           ],
         );
 
@@ -257,8 +276,9 @@ class OrderCardWidget extends StatelessWidget {
       case "OUT_FOR_DELIVERY":
         return Row(
           children: [
-            actionButton(
-                "Delivered", Colors.orange.shade600, () => update("DELIVERED")),
+            actionButton("Delivered", Colors.orange.shade600,
+                () => update("DELIVERED"),
+                isLoading: isUpdating),
           ],
         );
 

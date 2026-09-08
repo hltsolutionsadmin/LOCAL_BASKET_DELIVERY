@@ -169,6 +169,14 @@ class Content {
   /// Grand total shown on the card.
   double? get totalAmount => totalPrice;
 
+  /// Customer's display name (from the `userId` block).
+  String? get customerName {
+    final n = user?.name?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    final local = user?.email?.split('@').first.trim();
+    return (local != null && local.isNotEmpty) ? local : null;
+  }
+
   /// Best-effort customer contact number.
   String? get mobileNumber =>
       shippingAddress?.mobileNumber ??
