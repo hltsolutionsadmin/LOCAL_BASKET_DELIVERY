@@ -458,6 +458,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "in_app_update",
+      "rootUri": "file:///Users/juvi/.pub-cache/hosted/pub.dev/in_app_update-4.2.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "internet_connection_checker_plus",
       "rootUri": "file:///Users/juvi/.pub-cache/hosted/pub.dev/internet_connection_checker_plus-2.7.2",
       "packageUri": "lib/",

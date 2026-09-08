@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "localbasket_delivery_partner",
-      "version": "1.0.1+10",
+      "version": "1.0.1+11",
       "dependencies": [
         "carousel_slider",
         "connectivity_plus",
@@ -26,6 +26,7 @@
         "get_it",
         "google_fonts",
         "google_maps_flutter",
+        "in_app_update",
         "internet_connection_checker_plus",
         "intl",
         "latlong2",
@@ -87,6 +88,13 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "in_app_update",
+      "version": "4.2.5",
+      "dependencies": [
+        "flutter"
       ]
     },
     {

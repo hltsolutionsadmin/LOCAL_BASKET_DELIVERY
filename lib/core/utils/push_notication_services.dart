@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:localbasket_delivery_partner/core/injection.dart';
+import 'package:localbasket_delivery_partner/core/network/token_storage.dart';
+import 'package:localbasket_delivery_partner/domain/usecase/fcmToken/updateFcmToken_usecase.dart';
 
 class NotificationServices {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -42,6 +45,37 @@ class NotificationServices {
   void listenForTokenRefresh() {
     _messaging.onTokenRefresh.listen((token) {
       print("Token Refreshed: $token");
+    });
+  }
+
+  /// Push the current device's FCM token to the backend
+  /// (`PUT api/users/me/fcm-token`). No-ops when the user isn't signed in.
+  Future<void> registerFcmToken() async {
+    try {
+      final auth = await TokenStorage().getAccessToken();
+      if (auth == null || auth.isEmpty) return;
+
+      final token = await getDeviceToken();
+      if (token == null || token.isEmpty) return;
+
+      await sl<UpdateFcmTokenUseCase>().call(token);
+      print("FCM token registered with backend");
+    } catch (e) {
+      print("registerFcmToken failed: $e");
+    }
+  }
+
+  /// Keep the backend in sync whenever Firebase rotates the token.
+  void listenFcmTokenRefresh() {
+    _messaging.onTokenRefresh.listen((newToken) async {
+      try {
+        final auth = await TokenStorage().getAccessToken();
+        if (auth == null || auth.isEmpty) return;
+        await sl<UpdateFcmTokenUseCase>().call(newToken);
+        print("Rotated FCM token synced with backend");
+      } catch (e) {
+        print("FCM token refresh sync failed: $e");
+      }
     });
   }
 

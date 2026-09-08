@@ -32,8 +32,10 @@ String _ensureTrailingSlash(String url) {
 
 const TriggerOtp = 'auth/otp/send';
 const SigninUrl = 'auth/otp/login';
+const refreshTokenUrl = 'auth/refresh';
 const SignupUrl = 'usermgmt/auth/jtuserotp/trigger/sign-up?triggerOtp=true';
 const userDetails = 'api/users/me';
+const updateFcmTokenUrl = 'api/users/me/fcm-token';
 const updateCurrentCustomerUrl = 'usermgmt/user/userDetails';
 const deleteAccountUrl = 'usermgmt/user/skillrat';
 const rolePostUrl = 'usermgmt/user/user';
@@ -46,12 +48,16 @@ const availabilityUrl = 'delivery/api/partners/availability/';
 //delivery/api/partners/availability/DP260313-U22KB?available=true
 
 String fetchOrdersUrl(String id, int page, int size) {
-  return 'fulfillment/delivery-partner/$id?status=ASSIGNED_TO_PARTNER&page=$page&size=$size';
+  return 'api/fulfillment/orders/partner/$id?page=$page&size=$size&sort=createdDate%2Cdesc';
 }
 
 const partnerDetailsUrl = 'delivery/api/partners/getPartner';
-String updateOrderStatusUrl(String orderId, String status) {
-  return 'order/api/orders/status/$orderId?status=$status&notes=0&updatedBy';
+String updateOrderStatusUrl(String orderId) {
+  return 'api/fulfillment/$orderId/status';
+}
+
+String acceptOrderUrl(String orderId) {
+  return 'api/fulfillment/$orderId/accept';
 }
 
 String deliverTriggerOtpUrl(String orderId) {

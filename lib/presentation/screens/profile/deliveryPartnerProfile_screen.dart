@@ -10,6 +10,7 @@ import 'package:localbasket_delivery_partner/presentation/cubit/authentication/c
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_state.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/authentication/login_screen.dart';
+import 'package:localbasket_delivery_partner/presentation/screens/profile/completedOrders_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/profile/logout.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/reports/reports_screen.dart';
 
@@ -164,6 +165,19 @@ class _DeliveryPartnerProfileScreenState
                           context,
                           MaterialPageRoute(
                               builder: (_) => const ReportsScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _optionTile(
+                      title: "Completed Orders",
+                      icon: Icons.check_circle_outline,
+                      color: const Color(0xFFFF6F00),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const CompletedOrdersScreen()),
                         );
                       },
                     ),

@@ -3,7 +3,8 @@ import 'package:localbasket_delivery_partner/core/network/network_service.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:localbasket_delivery_partner/core/network/token_storage.dart';
+import 'package:localbasket_delivery_partner/core/utils/push_notication_services.dart';
 import '../../../../domain/usecase/authentication/signin_usecase.dart';
 import 'signin_state.dart';
 
@@ -51,10 +52,14 @@ class SignInCubit extends Cubit<SignInState> {
         print('signEntity: $signEntity');
 
         if (signEntity.accessToken != null && signEntity.accessToken!.isNotEmpty) {
-          final prefs = await SharedPreferences.getInstance();
-          prefs.setString('TOKEN', signEntity.accessToken ?? '');
-          prefs.setString('REFRESH_TOKEN', signEntity.refreshToken ?? '');
+          await TokenStorage().saveTokens(
+            accessToken: signEntity.accessToken,
+            refreshToken: signEntity.refreshToken,
+            expiresIn: signEntity.expiresIn,
+          );
           context.read<CurrentCustomerCubit>().GetCurrentCustomer(context);
+          // Register this device's FCM token now that we're authenticated.
+          NotificationServices().registerFcmToken();
         } else {
           showDialog(
             context: context,

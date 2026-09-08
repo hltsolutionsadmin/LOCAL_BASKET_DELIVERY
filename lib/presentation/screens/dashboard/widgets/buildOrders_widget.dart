@@ -1,6 +1,7 @@
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_state.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/dashboard/widgets/orderCard_widget.dart';
+import 'package:localbasket_delivery_partner/presentation/screens/dashboard/widgets/orderCardShimmer_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,7 +22,7 @@ class BuildOrders extends StatefulWidget {
 class _BuildOrdersState extends State<BuildOrders> {
   final ScrollController _scrollController = ScrollController();
   int currentPage = 0;
-  final int pageSize = 10;
+  final int pageSize = 50;
   bool isLoadingMore = false;
   bool allPagesLoaded = false;
   List<dynamic> allOrders = [];
@@ -218,12 +219,17 @@ class _BuildOrdersState extends State<BuildOrders> {
     );
   }
 
-  Widget _buildLoading() => const Center(child: CupertinoActivityIndicator());
+  Widget _buildLoading() => const OrderListShimmer();
 
   Widget _buildError(String message) =>
       Center(child: Text(message, style: GoogleFonts.poppins()));
 
-  Widget _buildEmpty() => const Center(
-        child: Text("No accepted or delivered orders found."),
+  Widget _buildEmpty() => Center(
+        child: Text(
+          widget.status.toUpperCase() == "DELIVERED"
+              ? "No completed orders yet."
+              : "No active orders found.",
+          style: GoogleFonts.poppins(color: Colors.grey.shade600),
+        ),
       );
 }
