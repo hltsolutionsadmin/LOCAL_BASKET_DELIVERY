@@ -22,6 +22,11 @@ class OrderCardWidget extends StatelessWidget {
   /// Completed Orders screen).
   final bool showCreatedDate;
 
+  /// Delivery step driven by the dashboard (0 = needs accept, 1 = picked up,
+  /// 2 = in delivery, 3 = done). When provided the action button follows this
+  /// linear progression; when `null` the legacy status-based mapping is used.
+  final int? step;
+
   const OrderCardWidget({
     super.key,
     required this.order,
@@ -29,6 +34,7 @@ class OrderCardWidget extends StatelessWidget {
     this.paymentBadge,
     this.isUpdating = false,
     this.showCreatedDate = false,
+    this.step,
   });
 
   @override
@@ -63,7 +69,7 @@ class OrderCardWidget extends StatelessWidget {
               const SizedBox(height: 14),
               if (statusRaw != "DELIVERED") _buildAddressSection(context),
               const SizedBox(height: 12),
-              _buildActionButtons(context, statusRaw),
+              _buildActionButtons(context, statusRaw, step),
             ],
           ),
         ),
@@ -247,11 +253,46 @@ class OrderCardWidget extends StatelessWidget {
   // ACTION BUTTONS (REJECT RESTORED)
   // ------------------------------------------------------------------
 
-  Widget _buildActionButtons(BuildContext context, String status) {
+  Widget _buildActionButtons(BuildContext context, String status, int? step) {
     final id = order.orderNumber.toString();
 
     void update(String next) {
       context.read<UpdateOrderStatusCubit>().updateOrderStatus(id, next);
+    }
+
+    // Dashboard drives a fixed linear flow: Accept → In Delivery → Delivered.
+    // Each step sends the matching API status regardless of what the backend
+    // reported (e.g. orders that show up already at "IN_DELIVERY" still start
+    // on Accept).
+    if (step != null) {
+      switch (step) {
+        case 0:
+          return Row(
+            children: [
+              actionButton(
+                  "Accept", Colors.green.shade600, () => update("PICKED_UP"),
+                  isLoading: isUpdating),
+            ],
+          );
+        case 1:
+          return Row(
+            children: [
+              actionButton("In Delivery", Colors.blue.shade600,
+                  () => update("IN_DELIVERY"),
+                  isLoading: isUpdating),
+            ],
+          );
+        case 2:
+          return Row(
+            children: [
+              actionButton("Delivered", Colors.orange.shade600,
+                  () => update("DELIVERED"),
+                  isLoading: isUpdating),
+            ],
+          );
+        default:
+          return const SizedBox.shrink();
+      }
     }
 
     switch (status.toUpperCase()) {

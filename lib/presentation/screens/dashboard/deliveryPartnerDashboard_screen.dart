@@ -50,6 +50,11 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
   bool _awaitingUpdateRefresh = false;
   int _updateRefreshAttempts = 0;
 
+  /// orderId -> delivery step: 0 = needs accept, 1 = picked up,
+  /// 2 = in delivery, 3 = done. Drives the card's linear button flow; all
+  /// active orders start at 0 ("Accept") and advance locally on each tap.
+  final Map<String, int> _steps = {};
+
   @override
   void initState() {
     super.initState();
@@ -143,6 +148,8 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                   setState(() {
                     _updatingIds.add(state.orderId);
                     _expectedStatus[state.orderId] = state.status.toUpperCase();
+                    final current = _steps[state.orderId] ?? 0;
+                    _steps[state.orderId] = current < 3 ? current + 1 : current;
                   });
                 } else if (state is UpdateOrderStatusSuccess) {
                   // Server accepted it — now pull one fresh list and keep the
@@ -154,6 +161,8 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                   setState(() {
                     _updatingIds.remove(state.orderId);
                     _expectedStatus.remove(state.orderId);
+                    final current = _steps[state.orderId] ?? 1;
+                    _steps[state.orderId] = current > 0 ? current - 1 : 0;
                   });
                   _resumePolling();
                 }
@@ -193,8 +202,19 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                       _ordersById.clear();
                     }
                     for (final o in content) {
-                      if (o.id != null) _ordersById[o.id!] = o;
+                      if (o.id != null) {
+                        _ordersById[o.id!] = o;
+                        _steps.putIfAbsent(
+                          o.id!,
+                          () => (o.status ?? '').toUpperCase() == 'DELIVERED'
+                              ? 3
+                              : 0,
+                        );
+                      }
                     }
+                    // Drop finished steps once their order leaves the list.
+                    _steps.removeWhere(
+                        (id, step) => step >= 3 && !_ordersById.containsKey(id));
                     if (pageNo >= _page) {
                       _isLastPage = data?.last ?? true;
                     }
@@ -252,7 +272,8 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
           created.month == now.month &&
           created.day == now.day;
       final status = (order.status ?? '').toUpperCase();
-      return isToday && status != 'DELIVERED';
+      final step = order.id == null ? 0 : (_steps[order.id] ?? 0);
+      return isToday && status != 'DELIVERED' && step < 3;
     }).toList();
   }
 
@@ -310,6 +331,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
           return OrderCardWidget(
             key: ValueKey(order.id),
             order: order,
+            step: order.id == null ? null : _steps[order.id],
             isUpdating: order.id != null && _updatingIds.contains(order.id),
           );
         },
