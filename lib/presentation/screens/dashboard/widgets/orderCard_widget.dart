@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
@@ -17,12 +18,17 @@ class OrderCardWidget extends StatelessWidget {
   /// for this order is in flight).
   final bool isUpdating;
 
+  /// Show the order's `createdDate` under the order number (used on the
+  /// Completed Orders screen).
+  final bool showCreatedDate;
+
   const OrderCardWidget({
     super.key,
     required this.order,
     this.customStatusText,
     this.paymentBadge,
     this.isUpdating = false,
+    this.showCreatedDate = false,
   });
 
   @override
@@ -115,6 +121,16 @@ class OrderCardWidget extends StatelessWidget {
                   color: Colors.grey.shade600,
                 ),
               ),
+              if (showCreatedDate && _createdDateText(order) != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  _createdDateText(order)!,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
               const SizedBox(height: 6),
               statusChip(customStatusText ?? status),
             ],
@@ -303,6 +319,12 @@ class OrderCardWidget extends StatelessWidget {
   String _last4(String? num) {
     if (num == null || num.length <= 4) return num ?? "--";
     return num.substring(num.length - 4);
+  }
+
+  String? _createdDateText(dynamic order) {
+    final DateTime? created = order.createdDate;
+    if (created == null) return null;
+    return DateFormat('dd MMM yyyy, hh:mm a').format(created.toLocal());
   }
 
   void _openMap(String address) async {

@@ -1,3 +1,5 @@
+import 'package:localbasket_delivery_partner/core/utils/distance_calculator.dart';
+
 /// Delivery-partner orders list.
 ///
 /// Endpoint: GET api/fulfillment/orders/partner/{partnerId}?page&size
@@ -198,6 +200,31 @@ class Content {
   UserAddress? get userAddress => shippingAddress == null
       ? null
       : UserAddress(addressLine1: shippingAddress!.address);
+
+  // ---------------------------------------------------------------------------
+  // Geo coordinates + delivery distance
+  // ---------------------------------------------------------------------------
+
+  /// Restaurant / store pickup coordinates.
+  double? get restaurantLatitude => store?.latitude;
+  double? get restaurantLongitude => store?.longitude;
+
+  /// Customer drop coordinates. Uses the real shipping-address coordinates when
+  /// the backend provides them, otherwise a sample so the UI can still show a
+  /// realistic distance. See [kSampleCustomerLatitude].
+  double? get customerLatitude =>
+      shippingAddress?.latitude ?? kSampleCustomerLatitude;
+  double? get customerLongitude =>
+      shippingAddress?.longitude ?? kSampleCustomerLongitude;
+
+  /// Straight-line (Haversine) restaurant → customer distance in kilometres.
+  /// `null` when the restaurant has no valid coordinates.
+  double? get deliveryDistanceKm => tryCalculateDistanceKm(
+        restaurantLatitude,
+        restaurantLongitude,
+        customerLatitude,
+        customerLongitude,
+      );
 }
 
 double? _toDouble(dynamic value) {
@@ -331,6 +358,8 @@ class OrderAddress {
     required this.country,
     required this.postalCode,
     required this.mobileNumber,
+    this.latitude,
+    this.longitude,
   });
 
   final String? id;
@@ -341,6 +370,11 @@ class OrderAddress {
   final String? postalCode;
   final String? mobileNumber;
 
+  /// Present only if the backend starts sending geo-coordinates for the
+  /// shipping address; otherwise null (a sample is used downstream).
+  final double? latitude;
+  final double? longitude;
+
   factory OrderAddress.fromJson(Map<String, dynamic> json) {
     return OrderAddress(
       id: json["id"],
@@ -350,6 +384,8 @@ class OrderAddress {
       country: json["country"],
       postalCode: json["postalCode"],
       mobileNumber: json["mobileNumber"],
+      latitude: _toDouble(json["latitude"]),
+      longitude: _toDouble(json["longitude"]),
     );
   }
 }

@@ -67,7 +67,3 @@ String deliverTriggerOtpUrl(String orderId) {
 String deliverVerifyOtpUrl(String orderId, String otp) {
   return 'order/api/orders/validate-delivery-otp?orderNumber=$orderId&otp=$otp';
 }
-
-String reportsUrl(String frequency, String from, String to, String format) {
-  return 'delivery/api/partners/reports?frequency=$frequency&from=$from&to=$to&format=$format';
-}

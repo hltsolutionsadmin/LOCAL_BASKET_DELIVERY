@@ -37,7 +37,9 @@ class NotificationServices {
 
     return token;
   } else {
-    return await FirebaseMessaging.instance.getToken();
+    final token = await FirebaseMessaging.instance.getToken();
+    print("[FCM] Android device token: $token");
+    return token;
   }
 }
 
@@ -53,28 +55,40 @@ class NotificationServices {
   Future<void> registerFcmToken() async {
     try {
       final auth = await TokenStorage().getAccessToken();
-      if (auth == null || auth.isEmpty) return;
+      if (auth == null || auth.isEmpty) {
+        print("[FCM] register skipped — user not signed in");
+        return;
+      }
 
       final token = await getDeviceToken();
-      if (token == null || token.isEmpty) return;
+      print("[FCM] token to register: $token");
+      if (token == null || token.isEmpty) {
+        print("[FCM] register skipped — empty token");
+        return;
+      }
 
+      print("[FCM] registering token with backend...");
       await sl<UpdateFcmTokenUseCase>().call(token);
-      print("FCM token registered with backend");
+      print("[FCM] token registered with backend ✅");
     } catch (e) {
-      print("registerFcmToken failed: $e");
+      print("[FCM] registerFcmToken failed: $e");
     }
   }
 
   /// Keep the backend in sync whenever Firebase rotates the token.
   void listenFcmTokenRefresh() {
     _messaging.onTokenRefresh.listen((newToken) async {
+      print("[FCM] token rotated: $newToken");
       try {
         final auth = await TokenStorage().getAccessToken();
-        if (auth == null || auth.isEmpty) return;
+        if (auth == null || auth.isEmpty) {
+          print("[FCM] rotated token not synced — user not signed in");
+          return;
+        }
         await sl<UpdateFcmTokenUseCase>().call(newToken);
-        print("Rotated FCM token synced with backend");
+        print("[FCM] rotated token synced with backend ✅");
       } catch (e) {
-        print("FCM token refresh sync failed: $e");
+        print("[FCM] token refresh sync failed: $e");
       }
     });
   }

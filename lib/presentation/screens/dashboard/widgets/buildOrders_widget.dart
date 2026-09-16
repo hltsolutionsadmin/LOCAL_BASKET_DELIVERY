@@ -202,6 +202,8 @@ class _BuildOrdersState extends State<BuildOrders> {
                       customStatusText:
                           formatStatus(order.deliveryStatus ?? ""),
                       paymentBadge: buildPaymentBadge(order.paymentStatus),
+                      showCreatedDate:
+                          widget.status.toUpperCase() == "DELIVERED",
                     ),
                     const SizedBox(height: 12),
                   ],

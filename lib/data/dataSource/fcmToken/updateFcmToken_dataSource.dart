@@ -15,16 +15,19 @@ class UpdateFcmTokenRemoteDataSourceImpl
   @override
   Future<UpdateFcmTokenModel> updateFcmToken(
       String fcmToken, String deviceType) async {
+    final body = {
+      'fcmToken': fcmToken,
+      'deviceType': deviceType,
+    };
+    print('[FCM] PUT $baseUrl$updateFcmTokenUrl body: $body');
+
     try {
       final response = await client.put(
         '$baseUrl$updateFcmTokenUrl',
-        data: {
-          'fcmToken': fcmToken,
-          'deviceType': deviceType,
-        },
+        data: body,
       );
 
-      print('UpdateFcmToken Response [${response.statusCode}]: ${response.data}');
+      print('[FCM] response [${response.statusCode}]: ${response.data}');
 
       final code = response.statusCode ?? 0;
       if (code >= 200 && code < 300) {
@@ -32,7 +35,7 @@ class UpdateFcmTokenRemoteDataSourceImpl
       }
       throw Exception('Failed to update FCM token. Status code: $code');
     } catch (e) {
-      print('UpdateFcmToken Error: $e');
+      print('[FCM] update error: $e');
       throw Exception('UpdateFcmToken failed: ${e.toString()}');
     }
   }
