@@ -11,12 +11,13 @@ import 'package:localbasket_delivery_partner/data/dataSource/authentication/trig
 import 'package:localbasket_delivery_partner/data/dataSource/authentication/update_current_customer_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/availability/availability_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/location/location_remotedatasource.dart';
+import 'package:localbasket_delivery_partner/data/dataSource/fcmToken/updateFcmToken_dataSource.dart';
+import 'package:localbasket_delivery_partner/data/dataSource/orders/acceptOrder/acceptOrder_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/orders/deliverOtpVerification/deliverOtpVerification_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/orders/fetchOrders/fetchOrders_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/orders/updateOrderStatus/updateOrderStatus_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/partnerDetails/partnerDetails_dataSource.dart';
 import 'package:localbasket_delivery_partner/data/dataSource/registration/registration_dataSource.dart';
-import 'package:localbasket_delivery_partner/data/dataSource/reports/reports_datasource.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/authentication/current_customer_repository_impl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/authentication/deleteAccount_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/authentication/rolesPost_repoImpl.dart';
@@ -26,12 +27,13 @@ import 'package:localbasket_delivery_partner/data/repoImpl/authentication/trigge
 import 'package:localbasket_delivery_partner/data/repoImpl/authentication/update_current_customer_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/availability/availability_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/location/location_repoImpl.dart';
+import 'package:localbasket_delivery_partner/data/repoImpl/fcmToken/updateFcmToken_repoImpl.dart';
+import 'package:localbasket_delivery_partner/data/repoImpl/orders/acceptOrder/acceptOrder_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/orders/deliverOtpVerification/deliverOtpVerification_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/orders/fetchOrders/fetchOrders_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/orders/updateOrderStatus/updateOrderStatus_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/partnerDetails/partnerDetails_repoImpl.dart';
 import 'package:localbasket_delivery_partner/data/repoImpl/registration/registration_repoImpl.dart';
-import 'package:localbasket_delivery_partner/data/repoImpl/reports/reports_repoImpl.dart';
 import 'package:localbasket_delivery_partner/domain/repository/authentication/current_customer_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/authentication/deleteAccount_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/authentication/rolesPost_repository.dart';
@@ -41,12 +43,13 @@ import 'package:localbasket_delivery_partner/domain/repository/authentication/tr
 import 'package:localbasket_delivery_partner/domain/repository/authentication/update_current_customer_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/availability/availability_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/location/location_repo.dart';
+import 'package:localbasket_delivery_partner/domain/repository/fcmToken/updateFcmToken_repository.dart';
+import 'package:localbasket_delivery_partner/domain/repository/orders/acceptOrder/acceptOrder_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/orders/deliverOtpVerification/deliverOtpVerification_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/orders/fetchOrders/fetchOrders_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/orders/updateOrderStatus/updateOrderStatus_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/partnerDetails/partnerDetails_repository.dart';
 import 'package:localbasket_delivery_partner/domain/repository/registration/registration_repository.dart';
-import 'package:localbasket_delivery_partner/domain/repository/reports/reports_repository.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/authentication/current_customer_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/authentication/deleteAccount_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/authentication/rolesPost_usecase.dart';
@@ -56,12 +59,13 @@ import 'package:localbasket_delivery_partner/domain/usecase/authentication/trigg
 import 'package:localbasket_delivery_partner/domain/usecase/authentication/update_current_customer_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/availability/availability_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/location/location_usecase.dart';
+import 'package:localbasket_delivery_partner/domain/usecase/fcmToken/updateFcmToken_usecase.dart';
+import 'package:localbasket_delivery_partner/domain/usecase/orders/acceptOrder/acceptOrder_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/orders/deliverOtpVerification/deliverOtpVerification_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/orders/fetchOrders/fetchOrders_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/orders/updateOrderStatus/updateOrderStatus_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/partnerDetails/partnerDetails_usecase.dart';
 import 'package:localbasket_delivery_partner/domain/usecase/registration/registration_usecase.dart';
-import 'package:localbasket_delivery_partner/domain/usecase/reports/reports_usecase.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_cubit.dart';
@@ -71,15 +75,17 @@ import 'package:localbasket_delivery_partner/presentation/cubit/authentication/s
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/location/location_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/fcmToken/updateFcmToken_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/orders/acceptOrder/acceptOrder_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/deliverOtpVerification/deliverOtpVerification_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/orders/ordersSummary/orders_summary_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:localbasket_delivery_partner/presentation/cubit/reports/reports_cubit.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -287,6 +293,9 @@ void init() {
   sl.registerFactory(() => FetchOrdersCubit(
         sl<FetchOrdersUseCase>(),
       ));
+  sl.registerFactory(() => OrdersSummaryCubit(
+        sl<FetchOrdersUseCase>(),
+      ));
 
   //UpdateOrderStatus
 
@@ -305,6 +314,38 @@ void init() {
         sl<UpdateOrderStatusUseCase>(),
       ));
 
+  //AcceptOrder
+
+  sl.registerLazySingleton<AcceptOrderRemoteDataSource>(
+    () => AcceptOrderRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<AcceptOrderRepository>(
+    () => AcceptOrderRepositoryImpl(
+        remoteDataSource: sl<AcceptOrderRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => AcceptOrderUseCase(repository: sl<AcceptOrderRepository>()),
+  );
+  sl.registerFactory(() => AcceptOrderCubit(
+        sl<AcceptOrderUseCase>(),
+      ));
+
+  //UpdateFcmToken
+
+  sl.registerLazySingleton<UpdateFcmTokenRemoteDataSource>(
+    () => UpdateFcmTokenRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<UpdateFcmTokenRepository>(
+    () => UpdateFcmTokenRepositoryImpl(
+        remoteDataSource: sl<UpdateFcmTokenRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => UpdateFcmTokenUseCase(repository: sl<UpdateFcmTokenRepository>()),
+  );
+  sl.registerFactory(() => UpdateFcmTokenCubit(
+        sl<UpdateFcmTokenUseCase>(),
+      ));
+
   //
   //DeliverOtpVerification
   sl.registerLazySingleton<DeliverOtpRemoteDataSource>(
@@ -319,20 +360,5 @@ void init() {
   );
   sl.registerFactory(() => DeliverOtpCubit(
         useCase: sl<DeliverOtpUseCase>(),
-      ));
-
-  //Reports
-  sl.registerLazySingleton<ReportsRemoteDataSource>(
-    () => ReportsRemoteDataSourceImpl(client: sl<DioClient>().dio),
-  );
-  sl.registerLazySingleton<ReportsRepository>(
-    () =>
-        ReportsRepositoryImpl(remoteDataSource: sl<ReportsRemoteDataSource>()),
-  );
-  sl.registerLazySingleton(
-    () => ReportsUseCase(repository: sl<ReportsRepository>()),
-  );
-  sl.registerFactory(() => ReportsCubit(
-        useCase: sl<ReportsUseCase>(),
       ));
 }

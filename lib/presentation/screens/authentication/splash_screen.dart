@@ -4,7 +4,6 @@ import 'package:localbasket_delivery_partner/core/constants/img_const.dart';
 import 'package:localbasket_delivery_partner/core/utils/push_notication_services.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/authentication/login_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/dashboard/deliveryPartnerDashboard_screen.dart';
 import 'package:flutter/material.dart';
@@ -44,20 +43,10 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
     await _notificationServices.isRefreshToken();
 
-    _notificationServices.getDeviceToken().then((fcmToken) {
-      if (!mounted) return;
-      if (fcmToken != null) {
-        print('FCM Token: $fcmToken');
-        final payload = {
-          'fullName': '',
-          'email': '',
-          "fcmToken": fcmToken,
-        };
-        context
-            .read<UpdateCurrentCustomerCubit>()
-            .updateCustomer(payload, context);
-      }
-    });
+    // Store / refresh the device's FCM token on the backend
+    // (PUT api/users/me/fcm-token). Both calls no-op when not signed in.
+    _notificationServices.listenFcmTokenRefresh();
+    await _notificationServices.registerFcmToken();
   }
 
   Future<void> _startNavigationLogic() async {

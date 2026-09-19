@@ -3,13 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:localbasket_delivery_partner/components/custom_snackbar.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_cubit.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_state.dart';
-import 'package:localbasket_delivery_partner/presentation/screens/authentication/login_screen.dart';
+import 'package:localbasket_delivery_partner/presentation/screens/profile/completedOrders_screen.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/profile/logout.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/reports/reports_screen.dart';
 
@@ -156,7 +152,7 @@ class _DeliveryPartnerProfileScreenState
                 child: Column(
                   children: [
                     _optionTile(
-                      title: "Reports",
+                      title: "Revenue",
                       icon: Icons.assessment_outlined,
                       color: const Color(0xFFFF6F00),
                       onTap: () {
@@ -169,19 +165,25 @@ class _DeliveryPartnerProfileScreenState
                     ),
                     const SizedBox(height: 16),
                     _optionTile(
+                      title: "Completed Orders",
+                      icon: Icons.check_circle_outline,
+                      color: const Color(0xFFFF6F00),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const CompletedOrdersScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _optionTile(
                       title: "Logout",
                       icon: Icons.logout,
                       color: const Color(0xFFFF6F00),
                       onTap: () {
                         _showBottomSheet(const LogOutCnfrmBottomSheet());
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    _optionTile(
-                      title: "Delete Account",
-                      icon: Icons.delete_forever,
-                      color: Colors.red,
-                      onTap: _showDeleteConfirmationSheet,
                     ),
                   ],
                 ),
@@ -243,100 +245,4 @@ class _DeliveryPartnerProfileScreenState
     );
   }
 
-  void _showDeleteConfirmationSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) {
-        return BlocProvider.value(
-          value: context.read<DeleteAccountCubit>(),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-            child: BlocConsumer<DeleteAccountCubit, DeleteAccountState>(
-              listener: (context, state) async {
-                if (state is DeleteAccountSuccess) {
-                  Navigator.pop(context);
-                  CustomSnackbars.showSuccessSnack(
-                    context: context,
-                    title: "Deleted",
-                    message: "Account deleted successfully",
-                  );
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.clear();
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    (route) => false,
-                  );
-                } else if (state is DeleteAccountFailure) {
-                  CustomSnackbars.showErrorSnack(
-                    context: context,
-                    title: "Failed",
-                    message: "Couldn't delete your account",
-                  );
-                }
-              },
-              builder: (context, state) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.warning_amber_rounded,
-                        color: Colors.redAccent, size: 50),
-                    const SizedBox(height: 16),
-                    const Text("Confirm Delete",
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.redAccent)),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "This action will remove your account permanently.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black87),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel"),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent),
-                            onPressed: state is DeleteAccountLoading
-                                ? null
-                                : () {
-                                    context
-                                        .read<DeleteAccountCubit>()
-                                        .deleteAccount();
-                                  },
-                            child: state is DeleteAccountLoading
-                                ? const SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: Colors.white),
-                                  )
-                                : const Text("Delete"),
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
 }

@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:localbasket_delivery_partner/core/injection.dart';
+import 'package:localbasket_delivery_partner/core/network/token_storage.dart';
+import 'package:localbasket_delivery_partner/domain/usecase/fcmToken/updateFcmToken_usecase.dart';
 
 class NotificationServices {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -34,7 +37,9 @@ class NotificationServices {
 
     return token;
   } else {
-    return await FirebaseMessaging.instance.getToken();
+    final token = await FirebaseMessaging.instance.getToken();
+    print("[FCM] Android device token: $token");
+    return token;
   }
 }
 
@@ -42,6 +47,49 @@ class NotificationServices {
   void listenForTokenRefresh() {
     _messaging.onTokenRefresh.listen((token) {
       print("Token Refreshed: $token");
+    });
+  }
+
+  /// Push the current device's FCM token to the backend
+  /// (`PUT api/users/me/fcm-token`). No-ops when the user isn't signed in.
+  Future<void> registerFcmToken() async {
+    try {
+      final auth = await TokenStorage().getAccessToken();
+      if (auth == null || auth.isEmpty) {
+        print("[FCM] register skipped — user not signed in");
+        return;
+      }
+
+      final token = await getDeviceToken();
+      print("[FCM] token to register: $token");
+      if (token == null || token.isEmpty) {
+        print("[FCM] register skipped — empty token");
+        return;
+      }
+
+      print("[FCM] registering token with backend...");
+      await sl<UpdateFcmTokenUseCase>().call(token);
+      print("[FCM] token registered with backend ✅");
+    } catch (e) {
+      print("[FCM] registerFcmToken failed: $e");
+    }
+  }
+
+  /// Keep the backend in sync whenever Firebase rotates the token.
+  void listenFcmTokenRefresh() {
+    _messaging.onTokenRefresh.listen((newToken) async {
+      print("[FCM] token rotated: $newToken");
+      try {
+        final auth = await TokenStorage().getAccessToken();
+        if (auth == null || auth.isEmpty) {
+          print("[FCM] rotated token not synced — user not signed in");
+          return;
+        }
+        await sl<UpdateFcmTokenUseCase>().call(newToken);
+        print("[FCM] rotated token synced with backend ✅");
+      } catch (e) {
+        print("[FCM] token refresh sync failed: $e");
+      }
     });
   }
 

@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:localbasket_delivery_partner/core/constants/colors.dart';
 
 class CustomButton extends StatelessWidget {
@@ -16,26 +16,58 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColor.primaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColor.white),
+    final bool disabled = isLoading;
+
+    return Container(
+      width: double.infinity,
+      height: 54,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: disabled
+              ? [Colors.grey.shade400, Colors.grey.shade400]
+              : [AppColor.primaryColor, const Color(0xFFFF8A3D)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 50),
+        boxShadow: disabled
+            ? const []
+            : [
+                BoxShadow(
+                  color: AppColor.primaryColor.withOpacity(0.35),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
       ),
-      child: isLoading
-          ? const CupertinoActivityIndicator(color: Colors.white)
-          : Text(
-              buttonText,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: disabled ? null : onPressed,
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : Text(
+                    buttonText,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 }

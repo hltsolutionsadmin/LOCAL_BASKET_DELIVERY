@@ -278,7 +278,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              "You may receive your OTP via a phone call instead of SMS",
+                              "You will receive your OTP via SMS.",
                               style: GoogleFonts.poppins(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w500,

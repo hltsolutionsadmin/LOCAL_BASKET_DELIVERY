@@ -1,25 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-Widget actionButton(String text, Color color, VoidCallback onTap) {
+Widget actionButton(
+  String text,
+  Color color,
+  VoidCallback onTap, {
+  bool isLoading = false,
+}) {
   return ElevatedButton(
-    onPressed: onTap,
+    onPressed: isLoading ? null : onTap,
     style: ElevatedButton.styleFrom(
       elevation: 2,
       backgroundColor: color,
       foregroundColor: Colors.white,
+      disabledBackgroundColor: color.withOpacity(0.7),
+      disabledForegroundColor: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
     ),
-    child: Text(
-      text,
-      style: GoogleFonts.poppins(
-        fontWeight: FontWeight.w600,
-        fontSize: 13,
-      ),
-    ),
+    child: isLoading
+        ? const SizedBox(
+            height: 16,
+            width: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation(Colors.white),
+            ),
+          )
+        : Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
   );
 }
 

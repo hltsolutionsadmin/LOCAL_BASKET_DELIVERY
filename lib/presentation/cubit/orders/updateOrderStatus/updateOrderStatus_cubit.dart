@@ -10,11 +10,11 @@ class UpdateOrderStatusCubit extends Cubit<UpdateOrderStatusState> {
 
   Future<void> updateOrderStatus(String orderId, String status) async {
     try {
-      emit(UpdateOrderStatusLoading());
-      final result = await useCase.call(orderId,status);
-      emit(UpdateOrderStatusSuccess(result));
+      emit(UpdateOrderStatusLoading(orderId, status));
+      final result = await useCase.call(orderId, status);
+      emit(UpdateOrderStatusSuccess(result, orderId: orderId));
     } catch (e) {
-      emit(UpdateOrderStatusFailure(e.toString()));
+      emit(UpdateOrderStatusFailure(e.toString(), orderId: orderId));
     }
   }
 }

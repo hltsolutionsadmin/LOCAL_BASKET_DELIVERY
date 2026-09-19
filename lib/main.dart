@@ -10,18 +10,20 @@ import 'package:localbasket_delivery_partner/presentation/cubit/authentication/s
 import 'package:localbasket_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/location/location_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/fcmToken/updateFcmToken_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/orders/acceptOrder/acceptOrder_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/deliverOtpVerification/deliverOtpVerification_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/reports/reports_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/authentication/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:localbasket_delivery_partner/core/utils/in_app_update_service.dart';
 import 'core/injection.dart' as di;
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -83,8 +85,9 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<PartnerDetailsCubit>()),
         BlocProvider(create: (_) => di.sl<FetchOrdersCubit>()),
         BlocProvider(create: (_) => di.sl<UpdateOrderStatusCubit>()),
+        BlocProvider(create: (_) => di.sl<AcceptOrderCubit>()),
+        BlocProvider(create: (_) => di.sl<UpdateFcmTokenCubit>()),
         BlocProvider(create: (_) => di.sl<DeliverOtpCubit>()),
-        BlocProvider(create: (_) => di.sl<ReportsCubit>()),
       ],
       child: MaterialApp(
         title: 'Localbasket',
@@ -94,8 +97,38 @@ class _MyAppState extends State<MyApp> {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
           useMaterial3: true,
         ),
-        home: SplashScreen(),
+        home: const _AppUpdateGate(child: SplashScreen()),
       ),
     );
   }
+}
+
+/// Runs the native Play in-app update check once, right after first frame,
+/// then just renders [child].
+class _AppUpdateGate extends StatefulWidget {
+  const _AppUpdateGate({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_AppUpdateGate> createState() => _AppUpdateGateState();
+}
+
+class _AppUpdateGateState extends State<_AppUpdateGate> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      InAppUpdateService.instance.checkForUpdate();
+    });
+  }
+
+  @override
+  void dispose() {
+    InAppUpdateService.instance.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

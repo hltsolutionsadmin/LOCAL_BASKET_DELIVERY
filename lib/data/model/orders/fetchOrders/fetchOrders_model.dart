@@ -1,20 +1,17 @@
-class FetchOrdersModel {
-  FetchOrdersModel({
-    required this.message,
-    required this.status,
-    required this.data,
-  });
+import 'package:localbasket_delivery_partner/core/utils/distance_calculator.dart';
 
-  final String? message;
-  final String? status;
+/// Delivery-partner orders list.
+///
+/// Endpoint: GET api/fulfillment/orders/partner/{partnerId}?page&size
+/// The response is a Spring `Page` object (no envelope), so [FetchOrdersModel]
+/// simply wraps it in [data] to keep the existing call sites unchanged.
+class FetchOrdersModel {
+  FetchOrdersModel({required this.data});
+
   final Data? data;
 
   factory FetchOrdersModel.fromJson(Map<String, dynamic> json) {
-    return FetchOrdersModel(
-      message: json["message"],
-      status: json["status"],
-      data: json["data"] == null ? null : Data.fromJson(json["data"]),
-    );
+    return FetchOrdersModel(data: Data.fromJson(json));
   }
 }
 
@@ -58,9 +55,9 @@ class Data {
       totalPages: json["totalPages"],
       size: json["size"],
       number: json["number"],
-      sort: json["sort"] == null
-          ? []
-          : List<Sort>.from(json["sort"]!.map((x) => Sort.fromJson(x))),
+      sort: json["sort"] is List
+          ? List<Sort>.from(json["sort"]!.map((x) => Sort.fromJson(x)))
+          : [],
       first: json["first"],
       numberOfElements: json["numberOfElements"],
       empty: json["empty"],
@@ -71,245 +68,421 @@ class Data {
 class Content {
   Content({
     required this.id,
-    required this.orderNumber,
-    required this.userId,
-    required this.username,
-    required this.mobileNumber,
-    required this.userAddress,
-    required this.businessId,
-    required this.businessName,
-    required this.businessContactNumber,
-    required this.shippingAddressId,
-    required this.notes,
-    required this.timmimgs,
-    required this.businessAddress,
-    required this.totalAmount,
-    required this.totalTaxAmount,
-    required this.taxInclusive,
+    required this.b2bUnitId,
+    required this.cartId,
+    required this.couponCode,
+    required this.orderType,
+    required this.status,
     required this.paymentStatus,
-    required this.paymentTransactionId,
-    required this.orderStatus,
-    required this.deliveryStatus,
+    required this.deliveryPartnerId,
+    required this.deliveryCharge,
+    required this.platformFee,
+    required this.subTotal,
+    required this.totalDiscount,
+    required this.totalTax,
+    required this.totalPrice,
     required this.createdDate,
     required this.updatedDate,
-    required this.deliveryPartnerId,
-    required this.deliveryPartnerName,
-    required this.deliveryPartnerMobileNumber,
-    required this.selfOrder,
-    required this.orderItems,
+    required this.version,
+    required this.fulfillmentAgent,
+    required this.lineItems,
+    required this.shippingAddress,
+    required this.billingAddress,
+    required this.store,
+    required this.user,
   });
 
-  final num? id;
-  final String? orderNumber;
-  final num? userId;
-  final String? username;
-  final String? mobileNumber;
-  final UserAddress? userAddress;
-  final num? businessId;
-  final String? businessName;
-  final dynamic businessContactNumber;
-  final num? shippingAddressId;
-  final String? notes;
-  final String? timmimgs;
-  final BusinessAddress? businessAddress;
-  final double? totalAmount;
-  final double? totalTaxAmount;
-  final bool? taxInclusive;
+  final String? id;
+  final String? b2bUnitId;
+  final String? cartId;
+  final String? couponCode;
+  final String? orderType;
+  final String? status;
   final String? paymentStatus;
-  final String? paymentTransactionId;
-  final String? orderStatus;
-  final String? deliveryStatus;
+  final String? deliveryPartnerId;
+  final double? deliveryCharge;
+  final double? platformFee;
+  final double? subTotal;
+  final double? totalDiscount;
+  final double? totalTax;
+  final double? totalPrice;
   final DateTime? createdDate;
   final DateTime? updatedDate;
-  final String? deliveryPartnerId;
-  final String? deliveryPartnerName;
-  final String? deliveryPartnerMobileNumber;
-  final bool? selfOrder;
-  final List<OrderItem> orderItems;
+  final num? version;
+  final FulfillmentAgent? fulfillmentAgent;
+  final List<LineItem> lineItems;
+  final OrderAddress? shippingAddress;
+  final BillingAddress? billingAddress;
+  final OrderStore? store;
+  final OrderUser? user;
 
   factory Content.fromJson(Map<String, dynamic> json) {
     return Content(
       id: json["id"],
-      orderNumber: json["orderNumber"],
-      userId: json["userId"],
-      username: json["username"],
-      mobileNumber: json["mobileNumber"],
-      userAddress: json["userAddress"] == null
-          ? null
-          : UserAddress.fromJson(json["userAddress"]),
-      businessId: json["businessId"],
-      businessName: json["businessName"],
-      businessContactNumber: json["businessContactNumber"],
-      shippingAddressId: json["shippingAddressId"],
-      notes: json["notes"],
-      timmimgs: json["timmimgs"],
-      businessAddress: json["businessAddress"] == null
-          ? null
-          : BusinessAddress.fromJson(json["businessAddress"]),
-      totalAmount: json["totalAmount"],
-      totalTaxAmount: json["totalTaxAmount"],
-      taxInclusive: json["taxInclusive"],
+      b2bUnitId: json["b2bUnitId"],
+      cartId: json["cartId"],
+      couponCode: json["couponCode"],
+      orderType: json["orderType"],
+      status: json["status"],
       paymentStatus: json["paymentStatus"],
-      paymentTransactionId: json["paymentTransactionId"],
-      orderStatus: json["orderStatus"],
-      deliveryStatus: json["deliveryStatus"],
+      deliveryPartnerId: json["deliveryPartnerId"],
+      deliveryCharge: _toDouble(json["deliveryCharge"]),
+      platformFee: _toDouble(json["platformFee"]),
+      subTotal: _toDouble(json["subTotal"]),
+      totalDiscount: _toDouble(json["totalDiscount"]),
+      totalTax: _toDouble(json["totalTax"]),
+      totalPrice: _toDouble(json["totalPrice"]),
       createdDate: DateTime.tryParse(json["createdDate"] ?? ""),
       updatedDate: DateTime.tryParse(json["updatedDate"] ?? ""),
-      deliveryPartnerId: json["deliveryPartnerId"],
-      deliveryPartnerName: json["deliveryPartnerName"],
-      deliveryPartnerMobileNumber: json["deliveryPartnerMobileNumber"],
-      selfOrder: json["selfOrder"],
-      orderItems: json["orderItems"] == null
+      version: json["version"],
+      fulfillmentAgent: json["fulfillmentAgent"] == null
+          ? null
+          : FulfillmentAgent.fromJson(json["fulfillmentAgent"]),
+      lineItems: json["lineItems"] == null
           ? []
-          : List<OrderItem>.from(
-              json["orderItems"]!.map((x) => OrderItem.fromJson(x))),
+          : List<LineItem>.from(
+              json["lineItems"]!.map((x) => LineItem.fromJson(x))),
+      shippingAddress: json["shippingAddressId"] is Map<String, dynamic>
+          ? OrderAddress.fromJson(json["shippingAddressId"])
+          : null,
+      billingAddress: json["billingAddressId"] is Map<String, dynamic>
+          ? BillingAddress.fromJson(json["billingAddressId"])
+          : null,
+      store: json["storeId"] is Map<String, dynamic>
+          ? OrderStore.fromJson(json["storeId"])
+          : null,
+      user: json["userId"] is Map<String, dynamic>
+          ? OrderUser.fromJson(json["userId"])
+          : null,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Backwards-compatible getters used across the dashboard widgets.
+  // ---------------------------------------------------------------------------
+
+  /// Order identifier (UUID). Kept as `orderNumber` for existing UI code.
+  String? get orderNumber => id;
+
+  /// Single order status now drives both the order and delivery views.
+  String? get orderStatus => status;
+  String? get deliveryStatus => status;
+
+  /// Grand total shown on the card.
+  double? get totalAmount => totalPrice;
+
+  /// Customer's display name (from the `userId` block).
+  String? get customerName {
+    final n = user?.name?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    final local = user?.email?.split('@').first.trim();
+    return (local != null && local.isNotEmpty) ? local : null;
+  }
+
+  /// Best-effort customer contact number.
+  String? get mobileNumber =>
+      shippingAddress?.mobileNumber ??
+      billingAddress?.mobileNumber ??
+      _phoneFromEmail(user?.email);
+
+  /// Pickup location (store).
+  BusinessAddress? get businessAddress => store == null
+      ? null
+      : BusinessAddress(
+          addressLine1: (store!.address != null && store!.address!.isNotEmpty)
+              ? store!.address
+              : store!.storeName,
+          latitude: store!.latitude,
+          longitude: store!.longitude,
+        );
+
+  /// Drop location (customer shipping address).
+  UserAddress? get userAddress => shippingAddress == null
+      ? null
+      : UserAddress(addressLine1: shippingAddress!.address);
+
+  // ---------------------------------------------------------------------------
+  // Geo coordinates + delivery distance
+  // ---------------------------------------------------------------------------
+
+  /// Restaurant / store pickup coordinates.
+  double? get restaurantLatitude => store?.latitude;
+  double? get restaurantLongitude => store?.longitude;
+
+  /// Customer drop coordinates. Uses the real shipping-address coordinates when
+  /// the backend provides them, otherwise a sample so the UI can still show a
+  /// realistic distance. See [kSampleCustomerLatitude].
+  double? get customerLatitude =>
+      shippingAddress?.latitude ?? kSampleCustomerLatitude;
+  double? get customerLongitude =>
+      shippingAddress?.longitude ?? kSampleCustomerLongitude;
+
+  /// Straight-line (Haversine) restaurant → customer distance in kilometres.
+  /// `null` when the restaurant has no valid coordinates.
+  double? get deliveryDistanceKm => tryCalculateDistanceKm(
+        restaurantLatitude,
+        restaurantLongitude,
+        customerLatitude,
+        customerLongitude,
+      );
+}
+
+double? _toDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString());
+}
+
+String? _phoneFromEmail(String? email) {
+  if (email == null) return null;
+  final local = email.split("@").first;
+  final digits = RegExp(r'^\d{10,}$');
+  return digits.hasMatch(local) ? local : null;
+}
+
+class FulfillmentAgent {
+  FulfillmentAgent({
+    required this.agentId,
+    required this.agentType,
+    required this.b2bUnitId,
+    required this.displayName,
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    required this.mobileNumber,
+    required this.status,
+    required this.userId,
+    required this.vehicleType,
+    required this.vehicleRegistration,
+  });
+
+  final String? agentId;
+  final String? agentType;
+  final String? b2bUnitId;
+  final String? displayName;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final String? mobileNumber;
+  final String? status;
+  final String? userId;
+  final String? vehicleType;
+  final String? vehicleRegistration;
+
+  String get fullName =>
+      [firstName, lastName].where((e) => e != null && e.isNotEmpty).join(" ");
+
+  factory FulfillmentAgent.fromJson(Map<String, dynamic> json) {
+    return FulfillmentAgent(
+      agentId: json["agentId"],
+      agentType: json["agentType"],
+      b2bUnitId: json["b2bUnitId"],
+      displayName: json["displayName"],
+      email: json["email"],
+      firstName: json["firstName"],
+      lastName: json["lastName"],
+      mobileNumber: json["mobileNumber"],
+      status: json["status"],
+      userId: json["userId"],
+      vehicleType: json["vehicleType"],
+      vehicleRegistration: json["vehicleRegistration"],
     );
   }
 }
 
+class LineItem {
+  LineItem({
+    required this.id,
+    required this.productCode,
+    required this.productId,
+    required this.productName,
+    required this.quantity,
+    required this.unitPrice,
+    required this.totalPrice,
+    required this.discountPrice,
+    required this.taxAmount,
+    required this.status,
+    required this.fulfillmentStatus,
+    required this.fulfillmentAgentId,
+    required this.agentMessage,
+    required this.skuId,
+    required this.gift,
+    required this.giftMessage,
+  });
+
+  final String? id;
+  final String? productCode;
+  final String? productId;
+  final String? productName;
+  final num? quantity;
+  final double? unitPrice;
+  final double? totalPrice;
+  final double? discountPrice;
+  final double? taxAmount;
+  final String? status;
+  final String? fulfillmentStatus;
+  final String? fulfillmentAgentId;
+  final String? agentMessage;
+  final String? skuId;
+  final bool? gift;
+  final String? giftMessage;
+
+  factory LineItem.fromJson(Map<String, dynamic> json) {
+    return LineItem(
+      id: json["id"],
+      productCode: json["productCode"],
+      productId: json["productId"],
+      productName: json["productName"],
+      quantity: json["quantity"],
+      unitPrice: _toDouble(json["unitPrice"]),
+      totalPrice: _toDouble(json["totalPrice"]),
+      discountPrice: _toDouble(json["discountPrice"]),
+      taxAmount: _toDouble(json["taxAmount"]),
+      status: json["status"],
+      fulfillmentStatus: json["fulfillmentStatus"],
+      fulfillmentAgentId: json["fulfillmentAgentId"],
+      agentMessage: json["agentMessage"],
+      skuId: json["skuId"],
+      gift: json["gift"],
+      giftMessage: json["giftMessage"],
+    );
+  }
+}
+
+class OrderAddress {
+  OrderAddress({
+    required this.id,
+    required this.address,
+    required this.city,
+    required this.state,
+    required this.country,
+    required this.postalCode,
+    required this.mobileNumber,
+    this.latitude,
+    this.longitude,
+  });
+
+  final String? id;
+  final String? address;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? postalCode;
+  final String? mobileNumber;
+
+  /// Present only if the backend starts sending geo-coordinates for the
+  /// shipping address; otherwise null (a sample is used downstream).
+  final double? latitude;
+  final double? longitude;
+
+  factory OrderAddress.fromJson(Map<String, dynamic> json) {
+    return OrderAddress(
+      id: json["id"],
+      address: json["address"],
+      city: json["city"],
+      state: json["state"],
+      country: json["country"],
+      postalCode: json["postalCode"],
+      mobileNumber: json["mobileNumber"],
+      latitude: _toDouble(json["latitude"]),
+      longitude: _toDouble(json["longitude"]),
+    );
+  }
+}
+
+class BillingAddress {
+  BillingAddress({
+    required this.id,
+    required this.line1,
+    required this.city,
+    required this.state,
+    required this.postalCode,
+    required this.mobileNumber,
+  });
+
+  final String? id;
+  final String? line1;
+  final String? city;
+  final String? state;
+  final String? postalCode;
+  final String? mobileNumber;
+
+  factory BillingAddress.fromJson(Map<String, dynamic> json) {
+    return BillingAddress(
+      id: json["id"],
+      line1: json["line1"],
+      city: json["city"],
+      state: json["state"],
+      postalCode: json["postalCode"],
+      mobileNumber: json["mobileNumber"],
+    );
+  }
+}
+
+class OrderStore {
+  OrderStore({
+    required this.id,
+    required this.address,
+    required this.storeName,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  final String? id;
+  final String? address;
+  final String? storeName;
+  final double? latitude;
+  final double? longitude;
+
+  factory OrderStore.fromJson(Map<String, dynamic> json) {
+    return OrderStore(
+      id: json["id"],
+      address: json["address"],
+      storeName: json["storeName"],
+      latitude: _toDouble(json["latitude"]),
+      longitude: _toDouble(json["longitude"]),
+    );
+  }
+}
+
+class OrderUser {
+  OrderUser({
+    required this.id,
+    required this.email,
+    required this.name,
+  });
+
+  final String? id;
+  final String? email;
+  final String? name;
+
+  factory OrderUser.fromJson(Map<String, dynamic> json) {
+    return OrderUser(
+      id: json["id"],
+      email: json["email"],
+      name: json["name"],
+    );
+  }
+}
+
+/// Lightweight address shape retained for the dashboard widgets.
 class BusinessAddress {
   BusinessAddress({
-    required this.id,
-    required this.addressLine1,
-    required this.city,
-    required this.state,
-    required this.country,
-    required this.latitude,
-    required this.longitude,
-    required this.postalCode,
+    this.addressLine1,
+    this.latitude,
+    this.longitude,
   });
 
-  final num? id;
   final String? addressLine1;
-  final String? city;
-  final String? state;
-  final String? country;
   final double? latitude;
   final double? longitude;
-  final String? postalCode;
-
-  factory BusinessAddress.fromJson(Map<String, dynamic> json) {
-    return BusinessAddress(
-      id: json["id"],
-      addressLine1: json["addressLine1"],
-      city: json["city"],
-      state: json["state"],
-      country: json["country"],
-      latitude: json["latitude"],
-      longitude: json["longitude"],
-      postalCode: json["postalCode"],
-    );
-  }
 }
 
-class OrderItem {
-  OrderItem({
-    required this.id,
-    required this.productId,
-    required this.quantity,
-    required this.price,
-    required this.entryNumber,
-    required this.productName,
-    required this.media,
-    required this.taxAmount,
-    required this.taxPercentage,
-    required this.totalAmount,
-    required this.taxIgnored,
-  });
-
-  final num? id;
-  final num? productId;
-  final num? quantity;
-  final num? price;
-  final num? entryNumber;
-  final String? productName;
-  final List<Media> media;
-  final double? taxAmount;
-  final num? taxPercentage;
-  final double? totalAmount;
-  final bool? taxIgnored;
-
-  factory OrderItem.fromJson(Map<String, dynamic> json) {
-    return OrderItem(
-      id: json["id"],
-      productId: json["productId"],
-      quantity: json["quantity"],
-      price: json["price"],
-      entryNumber: json["entryNumber"],
-      productName: json["productName"],
-      media: json["media"] == null
-          ? []
-          : List<Media>.from(json["media"]!.map((x) => Media.fromJson(x))),
-      taxAmount: json["taxAmount"],
-      taxPercentage: json["taxPercentage"],
-      totalAmount: json["totalAmount"],
-      taxIgnored: json["taxIgnored"],
-    );
-  }
-}
-
-class Media {
-  Media({
-    required this.mediaType,
-    required this.url,
-  });
-
-  final String? mediaType;
-  final String? url;
-
-  factory Media.fromJson(Map<String, dynamic> json) {
-    return Media(
-      mediaType: json["mediaType"],
-      url: json["url"],
-    );
-  }
-}
-
+/// Lightweight address shape retained for the dashboard widgets.
 class UserAddress {
-  UserAddress({
-    required this.id,
-    required this.addressLine1,
-    required this.addressLine2,
-    required this.street,
-    required this.city,
-    required this.state,
-    required this.country,
-    required this.latitude,
-    required this.longitude,
-    required this.postalCode,
-    required this.userId,
-    required this.isDefault,
-  });
+  UserAddress({this.addressLine1});
 
-  final num? id;
   final String? addressLine1;
-  final String? addressLine2;
-  final String? street;
-  final String? city;
-  final String? state;
-  final String? country;
-  final double? latitude;
-  final double? longitude;
-  final String? postalCode;
-  final num? userId;
-  final bool? isDefault;
-
-  factory UserAddress.fromJson(Map<String, dynamic> json) {
-    return UserAddress(
-      id: json["id"],
-      addressLine1: json["addressLine1"],
-      addressLine2: json["addressLine2"],
-      street: json["street"],
-      city: json["city"],
-      state: json["state"],
-      country: json["country"],
-      latitude: json["latitude"],
-      longitude: json["longitude"],
-      postalCode: json["postalCode"],
-      userId: json["userId"],
-      isDefault: json["isDefault"],
-    );
-  }
 }
 
 class Pageable {
@@ -331,9 +504,9 @@ class Pageable {
 
   factory Pageable.fromJson(Map<String, dynamic> json) {
     return Pageable(
-      sort: json["sort"] == null
-          ? []
-          : List<Sort>.from(json["sort"]!.map((x) => Sort.fromJson(x))),
+      sort: json["sort"] is List
+          ? List<Sort>.from(json["sort"]!.map((x) => Sort.fromJson(x)))
+          : [],
       pageNumber: json["pageNumber"],
       pageSize: json["pageSize"],
       offset: json["offset"],

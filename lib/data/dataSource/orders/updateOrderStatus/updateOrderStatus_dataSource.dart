@@ -15,8 +15,9 @@ class UpdateOrderStatusRemoteDataSourceImpl
   @override
   Future<UpdateOrderStatusModel> updateOrderStatus(String orderId, String status) async {
     try {
-      final response = await client.post(
-        '$baseUrl${updateOrderStatusUrl(orderId,status)}',
+      final response = await client.put(
+        '$baseUrl${updateOrderStatusUrl(orderId)}',
+        data: {'status': status},
       );
 
       print('UpdateOrderStatus Response: ${response.data}');

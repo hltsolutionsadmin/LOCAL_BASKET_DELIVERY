@@ -1,23 +1,34 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/reports/reports_cubit.dart';
-import 'package:localbasket_delivery_partner/presentation/cubit/reports/reports_state.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:localbasket_delivery_partner/core/injection.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/orders/ordersSummary/orders_summary_cubit.dart';
+import 'package:localbasket_delivery_partner/presentation/cubit/orders/ordersSummary/orders_summary_state.dart';
 
-class ReportsScreen extends StatefulWidget {
+class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
 
   @override
-  State<ReportsScreen> createState() => _ReportsScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<OrdersSummaryCubit>(
+      create: (_) => sl<OrdersSummaryCubit>(),
+      child: const _ReportsView(),
+    );
+  }
 }
 
-class _ReportsScreenState extends State<ReportsScreen> {
-  String _format = 'json';
-  String _frequency = 'daily';
+class _ReportsView extends StatefulWidget {
+  const _ReportsView();
+
+  @override
+  State<_ReportsView> createState() => _ReportsViewState();
+}
+
+class _ReportsViewState extends State<_ReportsView> {
+  String _quickRange = 'daily';
 
   DateTime? _fromDate;
   DateTime? _toDate;
@@ -27,100 +38,71 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   void initState() {
     super.initState();
-    _applyAutoDates(); // default auto-set for Daily
+    _applyQuickRange();
   }
 
-  // AUTO DATE SELECTOR
-  void _applyAutoDates() {
+  // Quick-select preset ranges.
+  void _applyQuickRange() {
     final today = DateTime.now();
 
-    if (_frequency == "daily") {
+    if (_quickRange == "daily") {
       _fromDate = today;
       _toDate = today;
-    }
-
-    if (_frequency == "weekly") {
-      final weekStart =
-          today.subtract(Duration(days: today.weekday - 1)); // Monday
-      final weekEnd = weekStart.add(const Duration(days: 6)); // Sunday
+    } else if (_quickRange == "weekly") {
+      final weekStart = today.subtract(Duration(days: today.weekday - 1));
       _fromDate = weekStart;
-      _toDate = weekEnd;
-    }
-
-    if (_frequency == "monthly") {
-      final monthStart = DateTime(today.year, today.month, 1);
-      final nextMonth = DateTime(today.year, today.month + 1, 1);
-      final monthEnd = nextMonth.subtract(const Duration(days: 1));
-      _fromDate = monthStart;
-      _toDate = monthEnd;
+      _toDate = weekStart.add(const Duration(days: 6));
+    } else if (_quickRange == "monthly") {
+      _fromDate = DateTime(today.year, today.month, 1);
+      _toDate = DateTime(today.year, today.month + 1, 0);
     }
 
     setState(() {});
   }
 
-  // Save Excel
-  Future<void> _saveExcel(List<int> bytes) async {
-    try {
-      String fileName = "report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
+  Future<void> _pickDate({required bool isFrom}) async {
+    final initial = (isFrom ? _fromDate : _toDate) ?? DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    if (picked == null) return;
 
-      if (Platform.isAndroid) {
-        // Request manage permission
-        var status = await Permission.storage.request();
-        if (!status.isGranted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Storage permission required")),
-          );
-          return;
-        }
-
-        // Use MediaStore API (Shows in Files → Downloads)
-        final directory = await getExternalStorageDirectory();
-        final downloadsPath = "/storage/emulated/0/Download";
-
-        final file = File("$downloadsPath/$fileName");
-        await file.writeAsBytes(bytes);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Excel saved to Downloads:\n${file.path}"),
-            duration: const Duration(seconds: 3),
-          ),
-        );
+    setState(() {
+      if (isFrom) {
+        _fromDate = picked;
+        if (_toDate != null && _toDate!.isBefore(picked)) _toDate = picked;
+      } else {
+        _toDate = picked;
+        if (_fromDate != null && _fromDate!.isAfter(picked)) _fromDate = picked;
       }
+    });
+  }
 
-      // ---------------- iOS ------------------
-      else if (Platform.isIOS) {
-        final dir = await getApplicationDocumentsDirectory();
-        final file = File("${dir.path}/$fileName");
-        await file.writeAsBytes(bytes);
-        print(file.path);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Excel saved to Files app:\n${file.path}"),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (e) {
+  String? get _partnerId {
+    final state = context.read<CurrentCustomerCubit>().state;
+    return state is CurrentCustomerLoaded
+        ? state.currentCustomerModel.id
+        : null;
+  }
+
+  void _onGetSummary() {
+    final partnerId = _partnerId;
+    if (partnerId == null || partnerId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to save file: $e")),
+        const SnackBar(content: Text("Unable to load partner details.")),
       );
+      return;
     }
+    context.read<OrdersSummaryCubit>().loadSummary(
+          partnerId: partnerId,
+          from: _fromDate!,
+          to: _toDate!,
+        );
   }
 
-  // Submit
-  void _onSubmit() {
-    final from = _df.format(_fromDate!);
-    final to = _df.format(_toDate!);
-
-    if (_format == 'excel') {
-      context.read<ReportsCubit>().downloadExcel(_frequency, from, to);
-    } else {
-      context.read<ReportsCubit>().fetchReports(_frequency, from, to, _format);
-    }
-  }
-
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,7 +120,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         ),
         title: const Text(
-          "Reports",
+          "Revenue",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -147,222 +129,292 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: BlocConsumer<ReportsCubit, ReportsState>(
-          listener: (context, state) async {
-            if (state is ReportsExcelSuccess) await _saveExcel(state.bytes);
-            if (state is ReportsFailure) {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(state.message)));
-            }
-          },
-          builder: (context, state) {
-            final loading = state is ReportsLoading;
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 🔥 GLASS FILTER CARD
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.75),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                      border: Border.all(
+                          color: Colors.white.withOpacity(0.4), width: 1),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Filters",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                                color: Colors.indigo)),
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 🔥 GLASS FILTER CARD
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.75),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 20,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                        border: Border.all(
-                            color: Colors.white.withOpacity(0.4), width: 1),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Filters",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 18,
-                                  color: Colors.indigo)),
+                        const SizedBox(height: 18),
 
-                          const SizedBox(height: 18),
+                        _buildPremiumDropdown(
+                          title: "Quick range",
+                          value: _quickRange,
+                          items: const [
+                            DropdownMenuItem(
+                                value: "daily", child: Text("Today")),
+                            DropdownMenuItem(
+                                value: "weekly", child: Text("This week")),
+                            DropdownMenuItem(
+                                value: "monthly", child: Text("This month")),
+                          ],
+                          onChanged: (v) {
+                            _quickRange = v!;
+                            _applyQuickRange();
+                          },
+                        ),
 
-                          _buildPremiumDropdown(
-                            title: "Format",
-                            value: _format,
-                            items: const [
-                              DropdownMenuItem(
-                                  value: "json", child: Text("JSON")),
-                              DropdownMenuItem(
-                                  value: "excel", child: Text("Excel")),
-                            ],
-                            onChanged: loading
-                                ? null
-                                : (v) => setState(() => _format = v!),
-                          ),
+                        const SizedBox(height: 18),
 
-                          const SizedBox(height: 16),
-
-                          _buildPremiumDropdown(
-                            title: "Frequency",
-                            value: _frequency,
-                            items: const [
-                              DropdownMenuItem(
-                                  value: "daily", child: Text("Daily")),
-                              DropdownMenuItem(
-                                  value: "weekly", child: Text("Weekly")),
-                              DropdownMenuItem(
-                                  value: "monthly", child: Text("Monthly")),
-                            ],
-                            onChanged: loading
-                                ? null
-                                : (v) {
-                                    _frequency = v!;
-                                    _applyAutoDates();
-                                  },
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          // 🔵 Auto Date Box
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.indigo.withOpacity(0.07),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Auto-selected Date Range",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.indigo.shade700)),
-                                const SizedBox(height: 10),
-                                Text("From: ${_df.format(_fromDate!)}"),
-                                Text("To:     ${_df.format(_toDate!)}"),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 22),
-
-                          // SUBMIT BUTTON
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: loading ? null : _onSubmit,
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 15),
-                                backgroundColor: Colors.indigo,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                elevation: 0,
+                        // 🔵 Editable date range
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _dateField(
+                                label: "From",
+                                value: _fromDate,
+                                onTap: () => _pickDate(isFrom: true),
                               ),
-                              child: loading
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                          color: Colors.white, strokeWidth: 2),
-                                    )
-                                  : Text(
-                                      _format == "excel"
-                                          ? "Download Excel"
-                                          : "Fetch JSON",
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white),
-                                    ),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _dateField(
+                                label: "To",
+                                value: _toDate,
+                                onTap: () => _pickDate(isFrom: false),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
-                // RESULTS
-                if (state is ReportsSuccess)
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: state.model.data.length,
-                      physics: const BouncingScrollPhysics(),
-                      itemBuilder: (context, i) {
-                        final d = state.model.data[i];
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          margin: const EdgeInsets.only(bottom: 14),
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.07),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6)),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // LEFT COLUMN
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    d.periodLabel != null
-                                        ? _df.format(d.periodLabel!)
-                                        : "N/A",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 17),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text("Assigned: ${d.assignedCount ?? 0}",
-                                      style: const TextStyle(fontSize: 14)),
-                                  Text("Delivered: ${d.deliveredCount ?? 0}",
-                                      style: const TextStyle(
-                                          color: Colors.green, fontSize: 14)),
-                                  Text("Pending: ${d.pendingCount ?? 0}",
-                                      style: const TextStyle(
-                                          color: Colors.red, fontSize: 14)),
-                                ],
-                              ),
-
-                              // RIGHT PRICE
-                              Text(
-                                "₹${d.totalAmount ?? 0}",
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.indigo,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  )
-              ],
-            );
-          },
+              // 💰 DELIVERED + REVENUE SUMMARY
+              _buildSummarySection(),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // DELIVERED + REVENUE SUMMARY
+  // ---------------------------------------------------------------------------
+
+  Widget _buildSummarySection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [Color(0xff1E2A78), Color(0xff4C5DFB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.indigo.withOpacity(0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Delivered & Revenue",
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 18),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _fromDate != null && _toDate != null
+                ? "${_df.format(_fromDate!)}  →  ${_df.format(_toDate!)}"
+                : "Pick a date range",
+            style: TextStyle(
+                color: Colors.white.withOpacity(0.8), fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          BlocBuilder<OrdersSummaryCubit, OrdersSummaryState>(
+            builder: (context, state) {
+              if (state is OrdersSummaryLoading) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2),
+                    ),
+                  ),
+                );
+              }
+
+              if (state is OrdersSummaryError) {
+                return Text(
+                  state.message,
+                  style: const TextStyle(color: Colors.white),
+                );
+              }
+
+              if (state is OrdersSummaryLoaded) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _summaryTile(
+                        "Delivered Orders",
+                        "${state.deliveredCount}",
+                        Icons.check_circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _summaryTile(
+                        "Revenue",
+                        "₹${state.revenue.toStringAsFixed(2)}",
+                        Icons.currency_rupee,
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return Text(
+                "Tap below to load delivered orders and delivery-charge revenue for the selected range.",
+                style: TextStyle(
+                    color: Colors.white.withOpacity(0.85), fontSize: 13),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          BlocBuilder<OrdersSummaryCubit, OrdersSummaryState>(
+            builder: (context, state) {
+              final busy = state is OrdersSummaryLoading;
+              return SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: (busy || _fromDate == null) ? null : _onGetSummary,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.indigo,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    busy ? "Loading…" : "Get Summary",
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryTile(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style:
+                TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dateField({
+    required String label,
+    required DateTime? value,
+    required VoidCallback? onTap,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87)),
+        const SizedBox(height: 6),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.shade300),
+              color: Colors.white,
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today,
+                    size: 16, color: Colors.indigo),
+                const SizedBox(width: 8),
+                Text(
+                  value != null ? _df.format(value) : "--",
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -389,36 +441,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
             border: Border.all(color: Colors.grey.shade300),
             color: Colors.white,
           ),
-          child: DropdownButton<String>(
-            value: value,
-            underline: const SizedBox(),
-            isExpanded: true,
-            items: items,
-            onChanged: onChanged,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // DROPDOWN BUILDER
-  Widget _buildDropDown({
-    required String title,
-    required String value,
-    required List<DropdownMenuItem<String>> items,
-    required Function(String?)? onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300)),
           child: DropdownButton<String>(
             value: value,
             underline: const SizedBox(),
