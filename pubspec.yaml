@@ -47,6 +47,7 @@ dependencies:
   url_launcher: ^6.3.2
   path_provider: ^2.1.4
   in_app_update: ^4.2.3
+  audioplayers: ^6.0.0
 
 
 
@@ -66,3 +67,4 @@ flutter:
 
   assets:
     - assets/images/jpg/
+    - assets/images/sounds/hen.mp3

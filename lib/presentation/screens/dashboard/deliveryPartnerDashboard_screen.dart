@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:localbasket_delivery_partner/data/model/authentication/current_customer_model.dart';
 import 'package:localbasket_delivery_partner/data/model/orders/FetchOrders/fetchOrders_model.dart';
@@ -54,6 +55,16 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
   /// 2 = in delivery, 3 = done. Drives the card's linear button flow; all
   /// active orders start at 0 ("Accept") and advance locally on each tap.
   final Map<String, int> _steps = {};
+
+  /// Every order id seen so far — used to tell a genuinely fresh order apart
+  /// from ones already on the dashboard after a manual refresh or pagination.
+  final Set<String> _seenOrderIds = {};
+
+  /// True once the first page has been loaded, so the initial batch of
+  /// existing orders never triggers the new-order sound.
+  bool _hasLoadedOnce = false;
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -118,6 +129,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
   void dispose() {
     _timer?.cancel();
     _scrollController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -203,9 +215,22 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                     }
                     for (final o in content) {
                       if (o.id != null) {
-                        _ordersById[o.id!] = o;
+                        final id = o.id!;
+                        if (_seenOrderIds.add(id) &&
+                            pageNo == 0 &&
+                            _hasLoadedOnce) {
+                          final status = (o.status ?? '').toUpperCase();
+                          if (status == 'READY' ||
+                              status == 'READY_FOR_PICKUP' ||
+                              status == 'PICKED_UP') {
+                            _audioPlayer.stop();
+                            _audioPlayer
+                                .play(AssetSource('images/sounds/hen.mp3'));
+                          }
+                        }
+                        _ordersById[id] = o;
                         _steps.putIfAbsent(
-                          o.id!,
+                          id,
                           () => (o.status ?? '').toUpperCase() == 'DELIVERED'
                               ? 3
                               : 0,
@@ -220,6 +245,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                     }
                     _loadingMore = false;
                     _initialLoading = false;
+                    _hasLoadedOnce = true;
                     if (_awaitingUpdateRefresh) {
                       _updatingIds.clear();
                       _expectedStatus.clear();
