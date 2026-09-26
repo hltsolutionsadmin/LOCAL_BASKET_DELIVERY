@@ -39,6 +39,7 @@ class _ReportsViewState extends State<_ReportsView> {
   void initState() {
     super.initState();
     _applyQuickRange();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onGetSummary());
   }
 
   // Quick-select preset ranges.
@@ -79,6 +80,7 @@ class _ReportsViewState extends State<_ReportsView> {
         if (_fromDate != null && _fromDate!.isAfter(picked)) _fromDate = picked;
       }
     });
+    _onGetSummary();
   }
 
   String? get _partnerId {
@@ -180,6 +182,7 @@ class _ReportsViewState extends State<_ReportsView> {
                           onChanged: (v) {
                             _quickRange = v!;
                             _applyQuickRange();
+                            _onGetSummary();
                           },
                         ),
 
@@ -288,21 +291,34 @@ class _ReportsViewState extends State<_ReportsView> {
               }
 
               if (state is OrdersSummaryLoaded) {
-                return Row(
+                return Column(
                   children: [
-                    Expanded(
-                      child: _summaryTile(
-                        "Delivered Orders",
-                        "${state.deliveredCount}",
-                        Icons.check_circle,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _summaryTile(
+                            "Delivered Orders",
+                            "${state.deliveredCount}",
+                            Icons.check_circle,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _summaryTile(
+                            "Revenue",
+                            "₹${state.revenue.toStringAsFixed(2)}",
+                            Icons.currency_rupee,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
                       child: _summaryTile(
-                        "Revenue",
-                        "₹${state.revenue.toStringAsFixed(2)}",
-                        Icons.currency_rupee,
+                        "Delivered Order Value",
+                        "₹${state.orderValue.toStringAsFixed(2)}",
+                        Icons.receipt_long,
                       ),
                     ),
                   ],
@@ -310,7 +326,7 @@ class _ReportsViewState extends State<_ReportsView> {
               }
 
               return Text(
-                "Tap below to load delivered orders and delivery-charge revenue for the selected range.",
+                "Delivered orders and delivery-charge revenue for the selected range.",
                 style: TextStyle(
                     color: Colors.white.withOpacity(0.85), fontSize: 13),
               );
@@ -334,7 +350,7 @@ class _ReportsViewState extends State<_ReportsView> {
                     elevation: 0,
                   ),
                   child: Text(
-                    busy ? "Loading…" : "Get Summary",
+                    busy ? "Loading…" : "Refresh",
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w700),
                   ),

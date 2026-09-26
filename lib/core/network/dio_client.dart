@@ -129,6 +129,7 @@ class DioClient {
 
     try {
       final deviceId = await _tokenStorage.getDeviceId();
+      log('TOKEN REFRESH => POST $refreshTokenUrl (deviceId: $deviceId)');
       final response = await _refreshDio.post(
         '$baseUrl$refreshTokenUrl',
         data: {
@@ -157,11 +158,13 @@ class DioClient {
             : int.tryParse('${expiresIn ?? ''}'),
       );
 
-      log('Access token refreshed via refresh token.');
+      log('TOKEN REFRESH OK [${response.statusCode}] => new access token '
+          'expires in ${expiresIn ?? '?'}s, refresh token '
+          '${newRefreshToken == refreshToken ? 'unchanged' : 'rotated'}');
       return newAccessToken;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
-      log('Token refresh failed [$code]: ${e.message}');
+      log('TOKEN REFRESH FAILED [$code]: ${e.response?.data ?? e.message}');
       // Refresh token itself is invalid / expired (30-day window elapsed).
       if (code == 401 || code == 403) {
         await _tokenStorage.clear();

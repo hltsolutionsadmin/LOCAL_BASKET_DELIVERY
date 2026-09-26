@@ -64,6 +64,10 @@ String deliverTriggerOtpUrl(String orderId) {
   return 'order/api/orders/trigger-delivery-otp?orderNumber=$orderId&type=DELIVERY';
 }
 
+String orderDetailsUrl(String orderId) {
+  return 'api/orders/$orderId';
+}
+
 String deliverVerifyOtpUrl(String orderId, String otp) {
   return 'order/api/orders/validate-delivery-otp?orderNumber=$orderId&otp=$otp';
 }

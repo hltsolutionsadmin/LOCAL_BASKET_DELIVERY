@@ -30,6 +30,7 @@ class OrdersSummaryCubit extends Cubit<OrdersSummaryState> {
 
       var deliveredCount = 0;
       var revenue = 0.0;
+      var orderValue = 0.0;
       var totalInRange = 0;
       var page = 0;
       var last = false;
@@ -53,6 +54,7 @@ class OrdersSummaryCubit extends Cubit<OrdersSummaryState> {
           if ((order.status ?? '').toUpperCase() == 'DELIVERED') {
             deliveredCount++;
             revenue += order.deliveryCharge ?? 0;
+            orderValue += order.totalPrice ?? 0;
           }
         }
 
@@ -71,6 +73,7 @@ class OrdersSummaryCubit extends Cubit<OrdersSummaryState> {
       emit(OrdersSummaryLoaded(
         deliveredCount: deliveredCount,
         revenue: revenue,
+        orderValue: orderValue,
         totalOrdersInRange: totalInRange,
         from: start,
         to: to,

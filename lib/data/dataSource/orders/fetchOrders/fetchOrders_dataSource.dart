@@ -4,6 +4,7 @@ import 'package:localbasket_delivery_partner/data/model/orders/FetchOrders/fetch
 
 abstract class FetchOrdersRemoteDataSource {
   Future<FetchOrdersModel> fetchOrders(Map<String, dynamic> params);
+  Future<Content> fetchOrderDetails(String orderId);
 }
 
 class FetchOrdersRemoteDataSourceImpl implements FetchOrdersRemoteDataSource {
@@ -30,6 +31,25 @@ class FetchOrdersRemoteDataSourceImpl implements FetchOrdersRemoteDataSource {
       }
     } catch (e) {
       throw Exception('Failed to load FetchOrders data: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Content> fetchOrderDetails(String orderId) async {
+    try {
+      final response = await client.request(
+        '$baseUrl${orderDetailsUrl(orderId)}',
+        options: Options(method: 'GET'),
+      );
+      if (response.statusCode == 200) {
+        print('responce of OrderDetails:: $response');
+        return Content.fromJson(Map<String, dynamic>.from(response.data));
+      } else {
+        throw Exception(
+            'Failed to load OrderDetails data: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load OrderDetails data: ${e.toString()}');
     }
   }
 }

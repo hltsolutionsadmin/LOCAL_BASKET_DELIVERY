@@ -25,7 +25,7 @@ class DeliveryPartnerDashboard extends StatefulWidget {
 }
 
 class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
-  static const int _pageSize = 50;
+  static const int _pageSize = 30;
 
   Timer? _timer;
   String? _partnerId;
@@ -50,11 +50,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
   final Map<String, String> _expectedStatus = {};
   bool _awaitingUpdateRefresh = false;
   int _updateRefreshAttempts = 0;
-
-  /// orderId -> delivery step: 0 = needs accept, 1 = picked up,
-  /// 2 = in delivery, 3 = done. Drives the card's linear button flow; all
-  /// active orders start at 0 ("Accept") and advance locally on each tap.
-  final Map<String, int> _steps = {};
 
   /// Every order id seen so far — used to tell a genuinely fresh order apart
   /// from ones already on the dashboard after a manual refresh or pagination.
@@ -160,8 +155,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                   setState(() {
                     _updatingIds.add(state.orderId);
                     _expectedStatus[state.orderId] = state.status.toUpperCase();
-                    final current = _steps[state.orderId] ?? 0;
-                    _steps[state.orderId] = current < 3 ? current + 1 : current;
                   });
                 } else if (state is UpdateOrderStatusSuccess) {
                   // Server accepted it — now pull one fresh list and keep the
@@ -173,8 +166,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                   setState(() {
                     _updatingIds.remove(state.orderId);
                     _expectedStatus.remove(state.orderId);
-                    final current = _steps[state.orderId] ?? 1;
-                    _steps[state.orderId] = current > 0 ? current - 1 : 0;
                   });
                   _resumePolling();
                 }
@@ -213,33 +204,31 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
                     if (pageNo == 0 && _page == 0) {
                       _ordersById.clear();
                     }
+                    var playNewOrderSound = false;
                     for (final o in content) {
                       if (o.id != null) {
                         final id = o.id!;
-                        if (_seenOrderIds.add(id) &&
+                        // Ring only for a newly arrived READY order — a new
+                        // order in any other status (PICKED_UP, IN_DELIVERY…)
+                        // stays silent. Orders are only marked "seen" once
+                        // they reach the dashboard, so a CONFIRMED order still
+                        // rings when the store marks it READY.
+                        final status = (o.status ?? '').toUpperCase();
+                        if (_dashboardStatuses.contains(status) &&
+                            _seenOrderIds.add(id) &&
                             pageNo == 0 &&
-                            _hasLoadedOnce) {
-                          final status = (o.status ?? '').toUpperCase();
-                          if (status == 'READY' ||
-                              status == 'READY_FOR_PICKUP' ||
-                              status == 'PICKED_UP') {
-                            _audioPlayer.stop();
-                            _audioPlayer
-                                .play(AssetSource('images/sounds/hen.mp3'));
-                          }
+                            _hasLoadedOnce &&
+                            (status == 'READY' ||
+                                status == 'READY_FOR_PICKUP')) {
+                          playNewOrderSound = true;
                         }
                         _ordersById[id] = o;
-                        _steps.putIfAbsent(
-                          id,
-                          () => (o.status ?? '').toUpperCase() == 'DELIVERED'
-                              ? 3
-                              : 0,
-                        );
                       }
                     }
-                    // Drop finished steps once their order leaves the list.
-                    _steps.removeWhere(
-                        (id, step) => step >= 3 && !_ordersById.containsKey(id));
+                    if (playNewOrderSound) {
+                      _audioPlayer.stop();
+                      _audioPlayer.play(AssetSource('images/sounds/hen.mp3'));
+                    }
                     if (pageNo >= _page) {
                       _isLastPage = data?.last ?? true;
                     }
@@ -277,6 +266,17 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
     );
   }
 
+  /// Statuses the partner acts on from the dashboard. CONFIRMED (store still
+  /// preparing) is hidden until the store marks the order READY; DELIVERED
+  /// orders live in Profile → Completed Orders.
+  static const _dashboardStatuses = {
+    'READY',
+    'READY_FOR_PICKUP',
+    'PICKED_UP',
+    'IN_DELIVERY',
+    'OUT_FOR_DELIVERY',
+  };
+
   /// `true` once the fetched list shows every just-updated order at its new
   /// status (or gone from the page, e.g. delivered).
   bool _responseReflectsUpdate(List<Content> content) {
@@ -298,8 +298,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
           created.month == now.month &&
           created.day == now.day;
       final status = (order.status ?? '').toUpperCase();
-      final step = order.id == null ? 0 : (_steps[order.id] ?? 0);
-      return isToday && status != 'DELIVERED' && step < 3;
+      return isToday && _dashboardStatuses.contains(status);
     }).toList();
   }
 
@@ -357,7 +356,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard> {
           return OrderCardWidget(
             key: ValueKey(order.id),
             order: order,
-            step: order.id == null ? null : _steps[order.id],
             isUpdating: order.id != null && _updatingIds.contains(order.id),
           );
         },

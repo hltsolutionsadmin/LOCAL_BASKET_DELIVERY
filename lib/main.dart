@@ -26,8 +26,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localbasket_delivery_partner/core/utils/in_app_update_service.dart';
 import 'core/injection.dart' as di;
 
+@pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
   print("Handling a background message: ${message.messageId}");
 }
 
@@ -38,9 +43,13 @@ void main() async {
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // On hot restart the native [DEFAULT] app still exists, so only
+    // initialize when needed; otherwise initializeApp throws duplicate-app.
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
     print("Firebase initialized successfully");
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   } catch (e) {
@@ -50,7 +59,7 @@ void main() async {
   di.init();
 
   final connectivityResult = await Connectivity().checkConnectivity();
-  if (connectivityResult == ConnectivityResult.none) {
+  if (connectivityResult.contains(ConnectivityResult.none)) {
     print("No Internet Connection");
   } else {
     print("Connected to the Internet");

@@ -179,6 +179,12 @@ class Content {
     return (local != null && local.isNotEmpty) ? local : null;
   }
 
+  /// Store (pickup) display name from the `storeId` block.
+  String? get storeName {
+    final n = store?.storeName?.trim();
+    return (n != null && n.isNotEmpty) ? n : null;
+  }
+
   /// Best-effort customer contact number.
   String? get mobileNumber =>
       shippingAddress?.mobileNumber ??
@@ -199,7 +205,11 @@ class Content {
   /// Drop location (customer shipping address).
   UserAddress? get userAddress => shippingAddress == null
       ? null
-      : UserAddress(addressLine1: shippingAddress!.address);
+      : UserAddress(
+          addressLine1: shippingAddress!.fullAddress,
+          latitude: shippingAddress!.latitude,
+          longitude: shippingAddress!.longitude,
+        );
 
   // ---------------------------------------------------------------------------
   // Geo coordinates + delivery distance
@@ -375,6 +385,15 @@ class OrderAddress {
   final double? latitude;
   final double? longitude;
 
+  /// "Ring road, Anakapalli, Andhrapradesh 531019" style single line.
+  String? get fullAddress {
+    final parts = [address, city, state, postalCode]
+        .where((e) => e != null && e.trim().isNotEmpty)
+        .map((e) => e!.trim())
+        .toList();
+    return parts.isEmpty ? null : parts.join(', ');
+  }
+
   factory OrderAddress.fromJson(Map<String, dynamic> json) {
     return OrderAddress(
       id: json["id"],
@@ -480,9 +499,11 @@ class BusinessAddress {
 
 /// Lightweight address shape retained for the dashboard widgets.
 class UserAddress {
-  UserAddress({this.addressLine1});
+  UserAddress({this.addressLine1, this.latitude, this.longitude});
 
   final String? addressLine1;
+  final double? latitude;
+  final double? longitude;
 }
 
 class Pageable {

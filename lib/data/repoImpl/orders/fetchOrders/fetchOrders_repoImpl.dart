@@ -11,4 +11,9 @@ class FetchOrdersRepositoryImpl implements FetchOrdersRepository {
   Future<FetchOrdersModel> fetchOrders(Map<String, dynamic> params) async {
     return await remoteDataSource.fetchOrders(params);
   }
+
+  @override
+  Future<Content> fetchOrderDetails(String orderId) async {
+    return await remoteDataSource.fetchOrderDetails(orderId);
+  }
 }

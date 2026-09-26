@@ -10,3 +10,15 @@ class FetchOrdersUseCase {
     return await repository.fetchOrders(params);
   }
 }
+
+/// Single order (`api/orders/{id}`) — full shipping address, store and
+/// customer details shown once the partner accepts the order.
+class FetchOrderDetailsUseCase {
+  final FetchOrdersRepository repository;
+
+  FetchOrderDetailsUseCase({required this.repository});
+
+  Future<Content> call(String orderId) async {
+    return await repository.fetchOrderDetails(orderId);
+  }
+}

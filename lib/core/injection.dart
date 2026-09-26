@@ -290,6 +290,9 @@ void init() {
   sl.registerLazySingleton(
     () => FetchOrdersUseCase(repository: sl<FetchOrdersRepository>()),
   );
+  sl.registerLazySingleton(
+    () => FetchOrderDetailsUseCase(repository: sl<FetchOrdersRepository>()),
+  );
   sl.registerFactory(() => FetchOrdersCubit(
         sl<FetchOrdersUseCase>(),
       ));

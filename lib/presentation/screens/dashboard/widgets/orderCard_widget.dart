@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:localbasket_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:localbasket_delivery_partner/presentation/screens/dashboard/widgets/dashboard_widgets.dart';
+import 'package:localbasket_delivery_partner/presentation/screens/dashboard/widgets/orderDetailsSection_widget.dart';
 
 class OrderCardWidget extends StatelessWidget {
   final dynamic order;
@@ -22,11 +22,6 @@ class OrderCardWidget extends StatelessWidget {
   /// Completed Orders screen).
   final bool showCreatedDate;
 
-  /// Delivery step driven by the dashboard (0 = needs accept, 1 = picked up,
-  /// 2 = in delivery, 3 = done). When provided the action button follows this
-  /// linear progression; when `null` the legacy status-based mapping is used.
-  final int? step;
-
   const OrderCardWidget({
     super.key,
     required this.order,
@@ -34,13 +29,15 @@ class OrderCardWidget extends StatelessWidget {
     this.paymentBadge,
     this.isUpdating = false,
     this.showCreatedDate = false,
-    this.step,
   });
 
   @override
   Widget build(BuildContext context) {
     final statusRaw = order.orderStatus ?? "";
     final status = _formatStatus(statusRaw);
+    // Before accept the card is collapsed to customer name, payment type and
+    // the Accept button; after accept it expands with the order details API.
+    final collapsed = statusRaw != "DELIVERED" && !_isAccepted(statusRaw);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
@@ -60,18 +57,21 @@ class OrderCardWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context, status),
-              const SizedBox(height: 12),
-              _buildStatusProgress(statusRaw),
-              const SizedBox(height: 14),
-              if (statusRaw != "DELIVERED") _buildAddressSection(context),
-              const SizedBox(height: 12),
-              _buildActionButtons(context, statusRaw, step),
-            ],
-          ),
+          child: collapsed
+              ? _buildCollapsed(context, statusRaw)
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(context, status),
+                    const SizedBox(height: 12),
+                    _buildStatusProgress(statusRaw),
+                    if (statusRaw != "DELIVERED")
+                      OrderDetailsSection(
+                          key: ValueKey(order.id), order: order),
+                    const SizedBox(height: 12),
+                    _buildActionButtons(context, statusRaw),
+                  ],
+                ),
         ),
       ),
     );
@@ -82,29 +82,6 @@ class OrderCardWidget extends StatelessWidget {
   // ------------------------------------------------------------------
 
   Widget _buildHeader(BuildContext context, String status) {
-    final paymentStatus = (order.paymentStatus ?? "").toUpperCase();
-
-    Widget? autoPaymentBadge() {
-      if (paymentStatus == "PENDING") {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.orange.shade100,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            "Cash",
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.orange.shade800,
-            ),
-          ),
-        );
-      }
-      return null;
-    }
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -142,19 +119,12 @@ class OrderCardWidget extends StatelessWidget {
             ],
           ),
         ),
-
-        // ⭐ AUTO CASH BADGE → overrides paymentBadge → else nothing
-        autoPaymentBadge() ?? paymentBadge ?? const SizedBox(),
-
+        _paymentTypeBadge() ?? paymentBadge ?? const SizedBox(),
         const SizedBox(width: 8),
-
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            IconButton(
-              icon: const Icon(Icons.phone, color: Colors.green),
-              onPressed: () => _showCall(context, order.mobileNumber),
-            ),
+            const SizedBox(height: 4),
             Text(
               "₹${order.totalAmount?.toStringAsFixed(2) ?? '--'}",
               style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
@@ -205,47 +175,76 @@ class OrderCardWidget extends StatelessWidget {
   // ADDRESS
   // ------------------------------------------------------------------
 
-  Widget _buildAddressSection(BuildContext context) {
+  /// Pickup/delivery locations are only revealed once the partner has
+  /// accepted the order (dashboard step >= 1, or a post-accept status).
+  bool _isAccepted(String status) => const [
+        "PICKED_UP",
+        "IN_DELIVERY",
+        "OUT_FOR_DELIVERY",
+      ].contains(status.toUpperCase());
+
+  /// Before accept: only the customer name (`userId.name`), payment type and
+  /// the Accept button.
+  Widget _buildCollapsed(BuildContext context, String statusRaw) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Divider(height: 24),
-        _addressRow(
-          "Pickup",
-          order.businessAddress?.addressLine1 ?? "N/A",
-          Icons.store,
-          Colors.orange.shade400,
+        Row(
+          children: [
+            Icon(Icons.person, color: Colors.blue.shade400, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                order.customerName ?? "Customer",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _paymentTypeBadge() ?? paymentBadge ?? const SizedBox(),
+          ],
         ),
         const SizedBox(height: 12),
-        _addressRow(
-          "Delivery",
-          order.userAddress?.addressLine1 ??
-              order.customerName ??
-              "N/A",
-          Icons.delivery_dining,
-          Colors.teal.shade400,
-        ),
+        _buildActionButtons(context, statusRaw),
       ],
     );
   }
 
-  Widget _addressRow(
-      String title, String subtitle, IconData icon, Color color) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: infoRow(
-            icon: icon,
-            color: color,
-            title: title,
-            subtitle: subtitle,
-          ),
+  /// `paymentStatus` PENDING → collect cash; PAID/SUCCESS → prepaid online.
+  Widget? _paymentTypeBadge() {
+    final paymentStatus = (order.paymentStatus ?? "").toUpperCase();
+    final String label;
+    final Color bg;
+    final Color fg;
+    if (paymentStatus == "PENDING") {
+      label = "Cash";
+      bg = Colors.orange.shade100;
+      fg = Colors.orange.shade800;
+    } else if (const ["PAID", "SUCCESS", "COMPLETED"].contains(paymentStatus)) {
+      label = "Paid Online";
+      bg = Colors.green.shade100;
+      fg = Colors.green.shade800;
+    } else {
+      return null;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: fg,
         ),
-        IconButton(
-          icon: Icon(Icons.navigation, color: color),
-          onPressed: () => _openMap(subtitle),
-        ),
-      ],
+      ),
     );
   }
 
@@ -253,57 +252,19 @@ class OrderCardWidget extends StatelessWidget {
   // ACTION BUTTONS (REJECT RESTORED)
   // ------------------------------------------------------------------
 
-  Widget _buildActionButtons(BuildContext context, String status, int? step) {
+  /// Status-driven flow:
+  ///   READY        → "Accept"      → PICKED_UP
+  ///   PICKED_UP    → "In Delivery" → IN_DELIVERY
+  ///   IN_DELIVERY  → "Completed"   → DELIVERED
+  ///   DELIVERED    → no button
+  Widget _buildActionButtons(BuildContext context, String status) {
     final id = order.orderNumber.toString();
 
     void update(String next) {
       context.read<UpdateOrderStatusCubit>().updateOrderStatus(id, next);
     }
 
-    // Dashboard drives a fixed linear flow: Accept → In Delivery → Delivered.
-    // Each step sends the matching API status regardless of what the backend
-    // reported (e.g. orders that show up already at "IN_DELIVERY" still start
-    // on Accept).
-    if (step != null) {
-      switch (step) {
-        case 0:
-          return Row(
-            children: [
-              actionButton(
-                  "Accept", Colors.green.shade600, () => update("PICKED_UP"),
-                  isLoading: isUpdating),
-            ],
-          );
-        case 1:
-          return Row(
-            children: [
-              actionButton("In Delivery", Colors.blue.shade600,
-                  () => update("IN_DELIVERY"),
-                  isLoading: isUpdating),
-            ],
-          );
-        case 2:
-          return Row(
-            children: [
-              actionButton("Delivered", Colors.orange.shade600,
-                  () => update("DELIVERED"),
-                  isLoading: isUpdating),
-            ],
-          );
-        default:
-          return const SizedBox.shrink();
-      }
-    }
-
     switch (status.toUpperCase()) {
-      // -----------------------------
-      // JUST ASSIGNED → Accept moves it straight to PICKED_UP
-      // -----------------------------
-      case "ASSIGNED":
-      case "ASSIGNED_TO_DELIVERY_PARTNER":
-      case "PENDING":
-      case "CONFIRMED":
-      case "PREPARING":
       case "READY":
       case "READY_FOR_PICKUP":
         return Row(
@@ -314,9 +275,6 @@ class OrderCardWidget extends StatelessWidget {
           ],
         );
 
-      // -----------------------------
-      // PICKED UP → show In Delivery
-      // -----------------------------
       case "PICKED_UP":
         return Row(
           children: [
@@ -326,22 +284,16 @@ class OrderCardWidget extends StatelessWidget {
           ],
         );
 
-      // -----------------------------
-      // ON THE WAY → show Delivered
-      // -----------------------------
       case "IN_DELIVERY":
       case "OUT_FOR_DELIVERY":
         return Row(
           children: [
-            actionButton("Delivered", Colors.orange.shade600,
-                () => update("DELIVERED"),
+            actionButton(
+                "Completed", Colors.orange.shade600, () => update("DELIVERED"),
                 isLoading: isUpdating),
           ],
         );
 
-      // -----------------------------
-      // DELIVERED → no actions left (card moves to Completed Orders)
-      // -----------------------------
       default:
         return const SizedBox.shrink();
     }
@@ -366,19 +318,5 @@ class OrderCardWidget extends StatelessWidget {
     final DateTime? created = order.createdDate;
     if (created == null) return null;
     return DateFormat('dd MMM yyyy, hh:mm a').format(created.toLocal());
-  }
-
-  void _openMap(String address) async {
-    final url =
-        'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(address)}';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    }
-  }
-
-  void _showCall(BuildContext context, String? number) {
-    if (number == null) return;
-    final uri = Uri.parse("tel:$number");
-    launchUrl(uri);
   }
 }

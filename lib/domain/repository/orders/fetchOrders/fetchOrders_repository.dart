@@ -2,4 +2,5 @@ import 'package:localbasket_delivery_partner/data/model/orders/FetchOrders/fetch
 
 abstract class FetchOrdersRepository {
   Future<FetchOrdersModel> fetchOrders(Map<String, dynamic> params);
+  Future<Content> fetchOrderDetails(String orderId);
 }

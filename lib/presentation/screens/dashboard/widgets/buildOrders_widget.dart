@@ -22,7 +22,7 @@ class BuildOrders extends StatefulWidget {
 class _BuildOrdersState extends State<BuildOrders> {
   final ScrollController _scrollController = ScrollController();
   int currentPage = 0;
-  final int pageSize = 50;
+  final int pageSize = 30;
   bool isLoadingMore = false;
   bool allPagesLoaded = false;
   List<dynamic> allOrders = [];
@@ -32,17 +32,9 @@ class _BuildOrdersState extends State<BuildOrders> {
   @override
   void initState() {
     super.initState();
+    // Pages are chained from the FetchOrdersSuccess listener until the last
+    // page, so no scroll-triggered pagination is needed here.
     _fetchOrders();
-
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 100 &&
-          !isLoadingMore &&
-          !allPagesLoaded) {
-        currentPage++;
-        _fetchOrders(isPaginating: true);
-      }
-    });
   }
 
   void _fetchOrders({bool isPaginating = false}) {
@@ -54,9 +46,7 @@ class _BuildOrdersState extends State<BuildOrders> {
 
     if (isPaginating) setState(() => isLoadingMore = true);
 
-    context.read<FetchOrdersCubit>().fetchOrders(params).then((_) {
-      if (mounted) setState(() => isLoadingMore = false);
-    });
+    context.read<FetchOrdersCubit>().fetchOrders(params);
   }
 
   List<dynamic> _filterOrders(List<dynamic> orders) {
@@ -165,6 +155,7 @@ class _BuildOrdersState extends State<BuildOrders> {
           if (state is FetchOrdersSuccess) {
             final newOrders = _filterOrders(state.orders.data?.content ?? []);
             setState(() {
+              isLoadingMore = false;
               if (currentPage == 0) {
                 allOrders = newOrders;
               } else {
@@ -172,14 +163,23 @@ class _BuildOrdersState extends State<BuildOrders> {
               }
               allPagesLoaded = state.orders.data?.last ?? true;
             });
+            // Each page (30) mixes statuses, so a page can contain few or no
+            // matching orders and leave nothing to scroll. Keep pulling pages
+            // until every matching order (e.g. all DELIVERED) is loaded.
+            if (!allPagesLoaded) {
+              currentPage++;
+              _fetchOrders(isPaginating: true);
+            }
+          } else if (state is FetchOrdersFailure) {
+            setState(() => isLoadingMore = false);
           }
         },
         builder: (context, state) {
-          if (state is FetchOrdersLoading && currentPage == 0) {
+          if (state is FetchOrdersLoading && allOrders.isEmpty) {
             return _buildLoading();
           }
 
-          if (state is FetchOrdersFailure) {
+          if (state is FetchOrdersFailure && allOrders.isEmpty) {
             return _buildError("Failed to Fetch Orders");
           }
 
